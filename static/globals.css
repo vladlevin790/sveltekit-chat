@@ -1,0 +1,38 @@
+body{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+}
+
+.main_sidebar{
+  margin:10px;
+  background: #2E2A2A;
+  box-shadow: 4px 4px 8px #3771B6;
+}
+
+.main_chat{
+  max-width:900px;
+  min-width: 800px;
+  background: #2E2A2A;
+  box-shadow: 4px 4px 8px #3771B6;
+}
+
+p{
+  color:white;
+}
+
+h1{
+  color: white;
+}
+
+.user{
+  background: #C8C7C7;
+  color: black;
+  text-decoration: none;
+}
+
+main.light-theme{
+  background: white;
+}

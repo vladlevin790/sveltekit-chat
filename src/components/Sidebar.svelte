@@ -29,7 +29,6 @@
 
     const chatName = `Chat with ${user.username}`;
 
-    // Check if chat already exists
     const { data: existingChatData, error: existingChatError } = await supabase
             .from("chat")
             .select("id")
@@ -44,7 +43,6 @@
       return;
     }
 
-    // Create new chat
     const { data: chatData, error: chatError } = await supabase
             .from("chat")
             .insert([{ name: chatName }])

@@ -4,7 +4,7 @@
   import { writable } from 'svelte/store';
   import { createClient } from '@supabase/supabase-js';
   import { readable, derived } from 'svelte/store';
-  import { messages,selectedMessageIndex,newMessageText,showModal,uploadedImage,user,users,searchResults} from '../lib/store.js'
+  import { messages,selectedMessageIndex,newMessageText,showModal,uploadedImage,user,users,selectedUser,selectedChat} from '../lib/store.js'
   import { onDestroy } from "svelte";
   import { invalidate } from "$app/navigation";
 
@@ -13,6 +13,59 @@
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   const { subscribe, set, update } = writable(0);
+
+  // export async function addMessage(event) {
+  //   if ($newMessageText.trim() === '') {
+  //     return;
+  //   }
+  //
+  //   const words = $newMessageText.trim().split(' ');
+  //   let newMessageTextFormatted = '';
+  //
+  //   let currentLineLength = 0;
+  //   for (let i = 0; i < words.length; i++) {
+  //     const word = words[i];
+  //     if (word.length > 20) {
+  //       const slicedWord = word.slice(0, 20);
+  //       newMessageTextFormatted += slicedWord + '\n';
+  //       currentLineLength = 0;
+  //       for (let j = 20; j < word.length; j += 20) {
+  //         const nextSlice = word.slice(j, j + 20);
+  //         newMessageTextFormatted += nextSlice + '\n';
+  //       }
+  //     } else if (currentLineLength + word.length > 20) {
+  //       newMessageTextFormatted += '\n';
+  //       currentLineLength = 0;
+  //       i--;
+  //     } else {
+  //       newMessageTextFormatted += word + ' ';
+  //       currentLineLength += word.length + 1;
+  //     }
+  //   }
+  //
+  //   let messageText = newMessageTextFormatted.substring(0, 100);
+  //
+  //   console.log(123);
+  //
+  //   if (newMessageTextFormatted.length > 100) {
+  //     messageText += '...';
+  //   }
+  //
+  //   const { data, error } = await supabase.from('message').insert({
+  //     message: messageText,
+  //     time: new Date()
+  //   });
+  //
+  //   if (error) {
+  //     console.error(error);
+  //   } else {
+  //     messages.set([...$messages, data]);
+  //   }
+  //
+  //   newMessageText.set('');
+  //   uploadedImage.set(null);
+  //   event.preventDefault();
+  // }
 
   export async function addMessage(event) {
     if ($newMessageText.trim() === '') {
@@ -51,21 +104,39 @@
       messageText += '...';
     }
 
+    const { data: chatData, error: chatError } = await supabase
+            .from('chat')
+            .select('id')
+            .eq('id', $selectedChat)
+            .single();
+
+    if (chatError) {
+      console.error(chatError);
+      return;
+    }
+
+    const chatId = chatData.id;
+
     const { data, error } = await supabase.from('message').insert({
       message: messageText,
-      time: new Date()
+      time: new Date(),
+      user_id: $selectedUser.id,
+      chat: chatId
     });
 
     if (error) {
       console.error(error);
     } else {
       messages.set([...$messages, data]);
+
     }
 
     newMessageText.set('');
     uploadedImage.set(null);
     event.preventDefault();
   }
+
+
 
   export function selectMessage(event, index) {
     const messagesArray = $messages;
@@ -149,7 +220,9 @@
 
 
   onMount(async () => {
+
     await fetchMessages();
+
     const { data, error } = await supabase.from('message').select('*').order('time', { ascending: false });
     const buttonSend = document.getElementById('button_send');
 
@@ -179,33 +252,41 @@
 
 
   export const loadChat = async () => {
-    const { data, error } = await supabase.from('message').select().order('id', { ascending: false });
+    const { data, error } = await supabase
+            .from('message')
+            .select()
+            .eq('chat', $selectedChat)
+            .order('id', { ascending: true });
+
     if (error) {
       console.error(error);
     } else {
-      messages.set(data.reverse());
+      messages.set(data);
     }
 
     const mySubscription = supabase
             .from('message')
+            .eq('chat', $selectedChat)
             .on('INSERT', (payload) => {
-              messages.set([...$messages, payload.new]);
-              loadChat();
+              if (payload.new.chat === $selectedChat) {
+                messages.set([...$messages, payload.new]);
+                messages.update((msgs) => msgs.filter((m) => m.chat === $selectedChat));
+              }
             })
             .subscribe();
+
+    return mySubscription;
   };
-
-
 
 </script>
 
 <main class="main_chat">
   <section class="chat__header section__1">
-    {#if $users.length > 0}
+    {#if $selectedUser}
       <a href="#" class="fa-regular fa-user user"></a>
       <div class="block__1">
-        <p class="User__Name_1" id="UserName1">{ $users[$users.length - 1].username }</p>
-        <p class="User__Status_1" id="UserStatus1">last seen { $users[$users.length - 1].last_login_at }</p>
+        <p class="User__Name_1" id="UserName1">{$selectedUser.username}</p>
+        <p class="User__Status_1" id="UserStatus1">last seen {$selectedUser.last_login_at}</p>
       </div>
     {:else}
       <p class="welcome-message">Привет!)</p>
@@ -213,18 +294,21 @@
   </section>
 
 
-  {#if $user}
+  {#if $selectedUser && $selectedChat}
   <section class="section__2" id="chatId">
     <div class="messages__1" id="messages1">
 
       {#each $messages as message, i}
-        <div class="message__1" on:contextmenu|preventDefault={(event) => selectMessage(event, i)}>
-          {#if message && message.message}
-            <p class="paragraph_1">{message.message}</p>
-          {/if}
-        </div>
+        {#if message && message.chat === $selectedChat}
+          <div class="message__1" on:contextmenu|preventDefault={(event) => selectMessage(event, i)}>
+            {#if message && message.message}
+              <p class="paragraph_1">{message.message}</p>
+            {/if}
+          </div>
+        {/if}
 
-        {#if $showModal && $selectedMessageIndex === i}
+
+      {#if $showModal && $selectedMessageIndex === i}
           <div class="modal">
             <div class="modal-content">
               <h2>Изменить сообщение</h2>

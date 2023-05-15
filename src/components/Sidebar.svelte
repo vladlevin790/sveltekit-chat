@@ -3,8 +3,7 @@
   import { onMount } from 'svelte';
   import { createClient } from "@supabase/supabase-js";
   import { writable } from 'svelte/store';
-  import Chat from "./Chat.svelte";
-  import {users,searchResults,user} from "$lib/store.js";
+  import {users,searchResults,user,selectedUser,selectedChat} from "$lib/store.js";
 
   const supabaseUrl = "https://vayakipdpailwnuozwvc.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWFraXBkcGFpbHdudW96d3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA1Mzk1MzEsImV4cCI6MTk5NjExNTUzMX0.Ax_xuXTtaKDFNRO2TPMMb1aLJMU-f42ufwbeqGP27rA";
@@ -30,6 +29,22 @@
 
     const chatName = `Chat with ${user.username}`;
 
+    // Check if chat already exists
+    const { data: existingChatData, error: existingChatError } = await supabase
+            .from("chat")
+            .select("id")
+            .eq("name", chatName)
+            .single();
+
+    if (existingChatData) {
+      console.log("Chat with this user already exists!");
+      selectedUser.set(user);
+      const chatId = existingChatData.id;
+      selectedChat.set(chatId);
+      return;
+    }
+
+    // Create new chat
     const { data: chatData, error: chatError } = await supabase
             .from("chat")
             .insert([{ name: chatName }])
@@ -51,7 +66,7 @@
       return;
     }
 
-    const chatId = lastChatData[0].id; // Идентификатор последнего чата
+    const chatId = lastChatData[0].id;
 
     const { data: userChatData, error: userChatError } = await supabase
             .from("user_chat")
@@ -61,16 +76,15 @@
       console.error(userChatError);
     } else {
       console.log("Chat created successfully!");
+      selectedUser.set(user);
+      selectedChat.set(chatId);
     }
   }
-
-
 
   async function loadUsers() {
     const { data: userChatDataLoad, error: userChatError } = await supabase
             .from("user_chat")
             .select("id_user")
-            .eq("id_chat",8);
 
     if (userChatError) {
       console.error(userChatError);
@@ -114,7 +128,7 @@
         if (data.length > 0) {
           searchResults.set(data);
         } else {
-          searchResults.set([{ username: "Пользователь не найден"          }]);
+          searchResults.set([{ username: "Пользователь не найден" }]);
         }
       }
     };
@@ -169,8 +183,8 @@
   {#if $users.length > 0}
     <div id="user-sections">
       {#each $users as user}
-        <section class="section__1" id={`user-section-${user.id}`}>
-          <a href="#" class="fa-regular fa-user user" on:click={() => startChat(user)}></a>
+        <section class="section__1" id={`user-section-${user.id}`} on:click={() => startChat(user)}>
+          <a href="#" class="fa-regular fa-user user"></a>
           <div class="block__1">
             <p class="User__Name_1" id={`UserName-${user.id}`}>{user.username}</p>
             <p class="User__Status_1" id={`UserStatus-${user.id}`}>last seen {user.last_login_at}</p>

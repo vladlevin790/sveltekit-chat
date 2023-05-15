@@ -8,4 +8,5 @@ export const messages = writable([]),
     uploadedImage = writable(null),
     users = writable([]),
     searchResults = writable([]),
-    theme = writable('light');
+    selectedUser = writable(null),
+    selectedChat = writable(null);

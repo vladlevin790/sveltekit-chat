@@ -29,4 +29,5 @@ export const load: PageLoad = async ({ parent }) => {
 		user: session.user,
 		userChats
 	};
+
 };

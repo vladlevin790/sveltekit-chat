@@ -2,62 +2,99 @@
   import '../app.css';
   import { onMount } from 'svelte';
   import { createClient } from "@supabase/supabase-js";
+  import { writable } from 'svelte/store';
+  import Chat from "./Chat.svelte";
+  import {users,searchResults,user} from "$lib/store.js";
 
   const supabaseUrl = "https://vayakipdpailwnuozwvc.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWFraXBkcGFpbHdudW96d3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA1Mzk1MzEsImV4cCI6MTk5NjExNTUzMX0.Ax_xuXTtaKDFNRO2TPMMb1aLJMU-f42ufwbeqGP27rA";
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  let users = [];
-
-  let searchResults = [];
-
+  let query = '';
 
   let searchInput;
+  let showMenu = writable(false);
 
-  let query;
-
-  let showMenu = false;
   function toggleMenu() {
-    showMenu = !showMenu;
-
-  }
-  async function saveSettings() {
-    const themeSelect = document.getElementById("theme");
-
-    const selectedTheme = themeSelect.value;
-
-    const { data, error } = await supabase
-            .from("settings")
-            .update({ theme: selectedTheme })
-            .match({ user_id: 1 });
-    if (error) {
-      console.error(error);
-      return;
-
-    }
-    const body = document.querySelector("body");
-    body.classList.remove("dark", "light");
-
-    body.classList.add(selectedTheme);
-    toggleMenu();
+    showMenu.update(value => !value);
   }
 
-  function startChat(user) {
-    const existingUser = users.find(u => u.id === user.id);
+  async function startChat(user) {
+    const existingUser = $users.find(u => u.id === user.id);
     if (!existingUser) {
-      users.push(user);
-      searchResults = searchResults.filter(u => u.id !== user.id);
+      users.update(value => [...value, user]);
     }
-    showMenu = false;
+
+    searchResults.update(value => value.filter(u => u.id !== user.id));
+    showMenu.set(false);
+
+    const chatName = `Chat with ${user.username}`;
+
+    const { data: chatData, error: chatError } = await supabase
+            .from("chat")
+            .insert([{ name: chatName }])
+            .single();
+
+    if (chatError) {
+      console.error(chatError);
+      return;
+    }
+
+    const { data: lastChatData, error: lastChatError } = await supabase
+            .from("chat")
+            .select("id")
+            .order("id", { ascending: false })
+            .limit(1);
+
+    if (lastChatError) {
+      console.error(lastChatError);
+      return;
+    }
+
+    const chatId = lastChatData[0].id; // Идентификатор последнего чата
+
+    const { data: userChatData, error: userChatError } = await supabase
+            .from("user_chat")
+            .insert([{ id_user: user.id, id_chat: chatId }]);
+
+    if (userChatError) {
+      console.error(userChatError);
+    } else {
+      console.log("Chat created successfully!");
+    }
   }
 
-  onMount(() => {
+
+
+  async function loadUsers() {
+    const { data: userChatDataLoad, error: userChatError } = await supabase
+            .from("user_chat")
+            .select("id_user")
+            .eq("id_chat",8);
+
+    if (userChatError) {
+      console.error(userChatError);
+      return;
+    }
+
+    const userIds = userChatDataLoad.map(row => row.id_user);
+
+    const { data: usersData, error: usersError } = await supabase
+            .from("users")
+            .select("*")
+            .in("id", userIds);
+
+    if (usersError) {
+      console.error(usersError);
+      return;
+    }
+
+    users.set(usersData);
+  }
+
+  onMount(async () => {
     const searchButton = document.getElementById("search-button");
     searchInput = document.getElementById("search-input");
-    // const btn = document.querySelector('.btn-toggle');
-    // btn.addEventListener('click', function() {
-    //   document.body.classList.toggle('light-theme');
-    // })
 
     const handleSearchButtonClick = async () => {
       query = searchInput.value.trim();
@@ -75,9 +112,9 @@
         }
 
         if (data.length > 0) {
-          searchResults = data;
+          searchResults.set(data);
         } else {
-          searchResults = [{ username: "Пользователь не найден" }];
+          searchResults.set([{ username: "Пользователь не найден"          }]);
         }
       }
     };
@@ -89,35 +126,39 @@
 
     document.addEventListener('click', (event) => {
       if (event.target !== menu && event.target !== settingsBtn) {
-        showMenu = false;
+        showMenu.set(false);
       }
     });
 
     const themeSelect = document.getElementById("theme");
     const body = document.querySelector("body");
+
+    await loadUsers();
   });
+
   export let loggedIn;
   export let data;
 </script>
+
 
 <main class="main_sidebar">
 
   <section class="block__head">
     <div class="header__1">
       <button type="submit" class="fa-solid fa-magnifying-glass" id="search-button"></button>
-      <input type="text" name="search" class="input__search" id="search-input" placeholder="Поиск">
+      <input type="text" name="search" class="input__search" id="search-input" placeholder="Поиск" bind:value={query}>
     </div>
   </section>
   <div id="search-results">
-    {#if searchResults.length > 0}
-      {#each searchResults as user}
+    {#if $searchResults.length > 0}
+      {#each $searchResults as user}
         <div class="search-result">
           <a href="#" class="fa-regular fa-user user" on:click={() => startChat(user)}></a>
           <div>{user.username}</div>
         </div>
       {/each}
     {:else}
-      {#if searchResults.length === 0}
+      {#if $searchResults.length === 0}
         {#if query && query.trim().length > 0}
           <div>Пользователь не найден</div>
         {/if}
@@ -125,22 +166,21 @@
     {/if}
   </div>
 
-
-
-  {#if users.length}
-    <section class="section__1" id="userId">
-      {#each users as user}
-        <a href="#" class="fa-regular fa-user user" on:click={() => startChat(user)}></a>
-        <div class="block__1">
-          <p class="User__Name_1" id="UserName1">{user.name}</p>
-          <p class="User__Status_1" id="UserStatus1">{user.last_active_at}</p>
-        </div>
+  {#if $users.length > 0}
+    <div id="user-sections">
+      {#each $users as user}
+        <section class="section__1" id={`user-section-${user.id}`}>
+          <a href="#" class="fa-regular fa-user user" on:click={() => startChat(user)}></a>
+          <div class="block__1">
+            <p class="User__Name_1" id={`UserName-${user.id}`}>{user.username}</p>
+            <p class="User__Status_1" id={`UserStatus-${user.id}`}>last seen {user.last_login_at}</p>
+          </div>
+        </section>
       {/each}
-    </section>
+    </div>
   {:else}
     <div></div>
   {/if}
-
 
   <section class="footer">
     <div class="footer__content">
@@ -150,10 +190,14 @@
     </div>
   </section>
 
-  {#if showMenu}
+  {#if $showMenu}
     <div class="menu">
-      <form>
+      <form >
         <label>Тема:</label>
+        <select id="theme">
+          <option value="dark">Темная</option>
+          <option value="light">Светлая</option>
+        </select>
         <button class="btn-toggle">поменять</button>
         <button type="submit">Сохранить</button>
       </form>
@@ -161,6 +205,7 @@
   {/if}
 
 </main>
+
 
 <style>
   main{

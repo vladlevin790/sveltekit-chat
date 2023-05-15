@@ -36,3 +36,7 @@ h1{
 main.light-theme{
   background: white;
 }
+
+.light.body{
+  background: white;
+}

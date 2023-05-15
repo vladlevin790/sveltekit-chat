@@ -1,211 +1,18 @@
-<!--<script>-->
-<!--  import { onMount } from 'svelte';-->
-<!--  import {writable} from "svelte/store";-->
-<!--  import { createClient } from '@supabase/supabase-js';-->
-
-<!--  const supabaseUrl = 'https://vayakipdpailwnuozwvc.supabase.co';-->
-<!--  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWFraXBkcGFpbHdudW96d3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA1Mzk1MzEsImV4cCI6MTk5NjExNTUzMX0.Ax_xuXTtaKDFNRO2TPMMb1aLJMU-f42ufwbeqGP27rA';-->
-<!--  const supabase = createClient(supabaseUrl, supabaseKey);-->
-
-<!--  let messages =writable([]);-->
-<!--  let newMessageText = writable('');-->
-<!--  let selectedMessageIndex = writable(-1);-->
-<!--  let showModal = writable(false);-->
-<!--  let uploadedImage = writable(null);-->
-
-<!--  async function addMessage(event) {-->
-
-<!--    if (newMessageText.trim() === '') {-->
-<!--      return;-->
-<!--    }-->
-
-<!--    const words = newMessageText.trim().split(' ');-->
-<!--    let newMessageTextFormatted = '';-->
-
-<!--    let currentLineLength = 0;-->
-<!--    for (let i = 0; i < words.length; i++) {-->
-<!--      const word = words[i];-->
-<!--      if (word.length > 20) {-->
-<!--        const slicedWord = word.slice(0, 20);-->
-<!--        newMessageTextFormatted += slicedWord + '\n';-->
-<!--        currentLineLength = 0;-->
-<!--        for (let j = 20; j < word.length; j += 20) {-->
-<!--          const nextSlice = word.slice(j, j + 20);-->
-<!--          newMessageTextFormatted += nextSlice + '\n';-->
-<!--        }-->
-<!--      } else if (currentLineLength + word.length > 20) {-->
-<!--        newMessageTextFormatted += '\n';-->
-<!--        currentLineLength = 0;-->
-<!--        i&#45;&#45;;-->
-<!--      } else {-->
-<!--        newMessageTextFormatted += word + ' ';-->
-<!--        currentLineLength += word.length + 1;-->
-<!--      }-->
-<!--    }-->
-<!--    let messageText = newMessageTextFormatted.substring(0, 100);-->
-<!--    if (newMessageTextFormatted.length > 100) {-->
-<!--      messageText += '...';-->
-<!--    }-->
-
-<!--    const { data, error } = await supabase.from('message').insert({-->
-<!--      message: messageText,-->
-<!--      time: new Date()-->
-<!--    });-->
-
-<!--    if (error) {-->
-<!--      console.error(error);-->
-<!--    } else {-->
-<!--      messages.push(data);-->
-<!--    }-->
-
-<!--    newMessageText = '';-->
-<!--    uploadedImage = null;-->
-<!--    event.preventDefault();-->
-<!--  }-->
-
-<!--  function selectMessage(event, index) {-->
-<!--    event.preventDefault();-->
-<!--    selectedMessageIndex = index;-->
-<!--    newMessageText = messages[selectedMessageIndex].message;-->
-<!--    showModal = true;-->
-<!--  }-->
-
-<!--  function handleFileUpload(event) {-->
-<!--    const file = event.target.files[0];-->
-<!--    const reader = new FileReader();-->
-
-<!--    reader.onload = (event) => {-->
-<!--      uploadedImage = event.target.result;-->
-<!--    };-->
-
-<!--    reader.readAsDataURL(file);-->
-<!--  }-->
-
-<!--  async function deleteMessage(index) {-->
-<!--    const id = messages[index].id;-->
-<!--    const { error } = await supabase.from('message').delete().eq('id', id);-->
-
-<!--    if (error) {-->
-<!--      console.error(error);-->
-<!--    } else {-->
-<!--      messages = messages.filter((_, i) => i !== index);-->
-<!--    }-->
-<!--  }-->
-
-<!--  async function editMessage() {-->
-<!--    if (selectedMessageIndex === -1 || newMessageText.trim() === '') {-->
-<!--      return;-->
-<!--    }-->
-
-<!--    const id = messages[selectedMessageIndex].id-->
-<!--    const { data, error } = await supabase-->
-<!--            .from('message')-->
-<!--            .update({-->
-<!--              message: newMessageText,-->
-<!--              time: new Date()-->
-<!--            })-->
-<!--            .eq('id', id);-->
-<!--    if (error) {-->
-<!--      console.error(error);-->
-<!--    } else {-->
-<!--      messages = messages.map((message, i) => {-->
-<!--        if (i === selectedMessageIndex) {-->
-<!--          return data;-->
-<!--        }-->
-<!--        return message;-->
-<!--      });-->
-<!--    }-->
-
-<!--    selectedMessageIndex = -1;-->
-<!--    newMessageText = '';-->
-<!--    uploadedImage = null;-->
-<!--    showModal = false;-->
-<!--  }-->
-
-<!--  function cancelEdit() {-->
-<!--    selectedMessageIndex = -1;-->
-<!--    newMessageText = '';-->
-<!--    uploadedImage = null;-->
-<!--    showModal = false;-->
-<!--  }-->
-
-<!--  onMount(async () => {-->
-<!--    const { data, error } = await supabase.from('message').select('*').order('time', { ascending: false })-->
-<!--    if (error) {-->
-<!--      console.error(error);-->
-<!--    } else {-->
-<!--      messages = data;-->
-<!--      console.log(messages);-->
-<!--    }-->
-<!--  });-->
-
-<!--  const selectedMessage = writable(null);-->
-<!--  $: $selectedMessage = selectedMessageIndex !== -1 ? messages[selectedMessageIndex] : null;-->
-
-<!--</script>-->
-
-<!--<main class="main_chat">-->
-<!--  <section class="chat__header section__1">-->
-<!--    <a href="#" class="fa-regular fa-user user"></a>-->
-<!--    <div class="block__1">-->
-<!--      <p class="User__Name_1" id="UserName1">No Name</p>-->
-<!--      <p class="User__Status_1" id="UserStatus1">2 minutes ago</p>-->
-<!--    </div>-->
-<!--  </section>-->
-
-<!--  <section class="section__2" id="chatId">-->
-<!--    <div class="messages__1" id="messages1">-->
-<!--      {#each messages as message, i}-->
-<!--        <div class="message__1" on:contextmenu|preventDefault={(event) => selectMessage(event, i)}>-->
-<!--          <p class="paragraph_1">{message.message}</p>-->
-<!--        </div>-->
-<!--      {/each}-->
-<!--      {#each messages as message , i}-->
-<!--        {#if showModal && selectedMessageIndex === i}-->
-<!--          <div class="modal">-->
-<!--            <div class="modal-content">-->
-<!--              <h2>Изменить сообщение</h2>-->
-<!--              <form on:submit|preventDefault={editMessage}>-->
-<!--                <div class="buttons">-->
-<!--                  <button type="submit">Save</button>-->
-<!--                  <button type="button" on:click={() => showModal = false}>Cancel</button>-->
-<!--                  <button on:click={() => deleteMessage(selectedMessageIndex)}>Delete</button>-->
-<!--                </div>-->
-<!--              </form>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        {/if}-->
-<!--      {/each}-->
-<!--    </div>-->
-<!--  </section>-->
-
-<!--  <section class="section__3">-->
-<!--    <div>-->
-<!--      <form enctype="multipart/form-data" onsubmit="addMessage(event)">-->
-<!--&lt;!&ndash;      <input class="fa-regular fa-paperclip" id="buttonClip" type="file" on:change={handleFileUpload}>&ndash;&gt;-->
-<!--      <input class="input_message" id="message" type="text" placeholder="Введите сообщение" bind:value={newMessageText}>-->
-<!--      <button type="submit" class="fa-sharp fa-regular fa-paper-plane" on:click={addMessage}></button>-->
-<!--      </form>-->
-<!--    </div>-->
-<!--  </section>-->
-<!--</main>-->
-
 <script>
+  import "../app.css"
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
   import { createClient } from '@supabase/supabase-js';
   import { readable, derived } from 'svelte/store';
+  import { messages,selectedMessageIndex,newMessageText,showModal,uploadedImage,user,users,searchResults} from '../lib/store.js'
+  import { onDestroy } from "svelte";
+  import { invalidate } from "$app/navigation";
 
   const supabaseUrl = 'https://vayakipdpailwnuozwvc.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWFraXBkcGFpbHdudW96d3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA1Mzk1MzEsImV4cCI6MTk5NjExNTUzMX0.Ax_xuXTtaKDFNRO2TPMMb1aLJMU-f42ufwbeqGP27rA';
   const supabase = createClient(supabaseUrl, supabaseKey);
-  const { subscribe, set, update } = writable(0);
 
-  export const messages = writable([]);
-  export const selectedMessageIndex = writable(-1);
-  export const newMessageText = writable('');
-  export const showModal = writable(false);
-  export const uploadedImage = writable(null);
+  const { subscribe, set, update } = writable(0);
 
   export async function addMessage(event) {
     if ($newMessageText.trim() === '') {
@@ -237,7 +44,9 @@
     }
 
     let messageText = newMessageTextFormatted.substring(0, 100);
+
     console.log(123);
+
     if (newMessageTextFormatted.length > 100) {
       messageText += '...';
     }
@@ -250,7 +59,7 @@
     if (error) {
       console.error(error);
     } else {
-      messages.update(msgs => [...msgs, data]);
+      messages.set([...$messages, data]);
     }
 
     newMessageText.set('');
@@ -259,28 +68,17 @@
   }
 
   export function selectMessage(event, index) {
-    let messagesArray;
-    messages.subscribe(value => {
-      messagesArray = value;
-    });
-
+    const messagesArray = $messages;
     newMessageText.set(messagesArray[index].message);
+    selectedMessageIndex.set(index);
     showModal.set(true);
+    loadChat();
   }
 
-  export function handleFileUpload(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
 
-    reader.onload = (event) => {
-      uploadedImage.set(event.target.result);
-    };
-
-    reader.readAsDataURL(file);
-  }
 
   export async function deleteMessage(index) {
-    const id = messages[index].id;
+    const id = $messages[index].id;
     const { error } = await supabase.from('message').delete().eq('id', id);
 
     if (error) {
@@ -295,7 +93,7 @@
       return;
     }
 
-    const id = messages[$selectedMessageIndex].id;
+    const id = $messages[$selectedMessageIndex].id;
     const { data, error } = await supabase
             .from('message')
             .update({
@@ -307,6 +105,7 @@
     if (error) {
       console.error(error);
     } else {
+      selectedMessageIndex.set(-1);
       messages.update(msgs => {
         return msgs.map((message, i) => {
           if (i === $selectedMessageIndex) {
@@ -317,11 +116,12 @@
       });
     }
 
-    selectedMessageIndex.set(-1);
     newMessageText.set('');
     uploadedImage.set(null);
     showModal.set(false);
   }
+
+
 
   export function cancelEdit() {
     selectedMessageIndex.set(-1);
@@ -330,14 +130,42 @@
     showModal.set(false);
   }
 
+  async function fetchMessages() {
+    const { data: messagesData, error: messagesError } = await supabase.from('message').select('*').order('time', { ascending: false });
+    const { data: userData, error: userError } = await supabase.from('users').select('*').limit(1);
+
+    if (messagesError) {
+      console.error(messagesError);
+    } else {
+      messages.set(messagesData);
+    }
+
+    if (userError) {
+      console.error(userError);
+    } else if (userData.length > 0) {
+      user.set(userData[0]);
+    }
+  }
+
+
   onMount(async () => {
-    const { data, error } = await supabase.from('message').select('*').order('time', { ascending: false })
+    await fetchMessages();
+    const { data, error } = await supabase.from('message').select('*').order('time', { ascending: false });
+    const buttonSend = document.getElementById('button_send');
+
     if (error) {
       console.error(error);
     } else {
       messages.set(data);
       console.log($messages);
     }
+
+
+    const pollInterval = setInterval(fetchMessages, 5);
+
+    onDestroy(() => {
+      clearInterval(pollInterval);
+    });
   });
 
   const selectedMessage = derived(
@@ -345,35 +173,66 @@
           ([$messages, $selectedMessageIndex]) => $selectedMessageIndex !== -1 ? $messages[$selectedMessageIndex] : null
   );
 
+  function handleUserClick(user) {
+    $users.set([user]);
+  }
+
+
+  export const loadChat = async () => {
+    const { data, error } = await supabase.from('message').select().order('id', { ascending: false });
+    if (error) {
+      console.error(error);
+    } else {
+      messages.set(data.reverse());
+    }
+
+    const mySubscription = supabase
+            .from('message')
+            .on('INSERT', (payload) => {
+              messages.set([...$messages, payload.new]);
+              loadChat();
+            })
+            .subscribe();
+  };
+
+
 
 </script>
 
 <main class="main_chat">
   <section class="chat__header section__1">
-    <a href="#" class="fa-regular fa-user user"></a>
-    <div class="block__1">
-      <p class="User__Name_1" id="UserName1">No Name</p>
-      <p class="User__Status_1" id="UserStatus1">2 minutes ago</p>
-    </div>
+    {#if $users.length > 0}
+      <a href="#" class="fa-regular fa-user user"></a>
+      <div class="block__1">
+        <p class="User__Name_1" id="UserName1">{ $users[$users.length - 1].username }</p>
+        <p class="User__Status_1" id="UserStatus1">last seen { $users[$users.length - 1].last_login_at }</p>
+      </div>
+    {:else}
+      <p class="welcome-message">Привет!)</p>
+    {/if}
   </section>
 
+
+  {#if $user}
   <section class="section__2" id="chatId">
     <div class="messages__1" id="messages1">
+
       {#each $messages as message, i}
         <div class="message__1" on:contextmenu|preventDefault={(event) => selectMessage(event, i)}>
-          <p class="paragraph_1">{message.message}</p>
+          {#if message && message.message}
+            <p class="paragraph_1">{message.message}</p>
+          {/if}
         </div>
-      {/each}
-      {#each $messages as message, i}
+
         {#if $showModal && $selectedMessageIndex === i}
           <div class="modal">
             <div class="modal-content">
               <h2>Изменить сообщение</h2>
               <form on:submit|preventDefault={editMessage}>
                 <div class="buttons">
-                  <button type="submit">Save</button>
-                  <button type="button" on:click={() => cancelEdit()}>Cancel</button>
-                  <button on:click={() => deleteMessage($selectedMessageIndex)}>Delete</button>
+                  <button type="submit">сохранить</button>
+                  <button type="button" on:click={() => cancelEdit()}>отменить</button>
+                  <button on:click={() => deleteMessage($selectedMessageIndex)}>удалить</button>
                 </div>
               </form>
             </div>
@@ -382,23 +241,22 @@
       {/each}
     </div>
   </section>
+  {:else}
+    <section class="section__2">
+     <p class="recomendation_message">Активных чатов пока нет, перейдите на окно слева и начните новый чат.</p>
+    </section>
+  {/if}
 
   <section class="section__3">
     <div>
-      <form enctype="multipart/form-data" onsubmit={addMessage}>
-        <!-- <input class="fa-regular fa-paperclip" id="buttonClip" type="file" on:change={handleFileUpload}> -->
-        <input class="input_message" id="message" type="text" placeholder="Введите сообщение" bind:value={$newMessageText}>
-        <button type="submit" class="fa-sharp fa-regular fa-paper-plane"></button>
+      <form enctype="multipart/form-data" on:submit="{addMessage}">
+        <!-- <input class="fa-regular fa-paperclip" id="buttonClip" type="file" on:change="{handleFileUpload}"> -->
+        <input class="input_message" id="message" type="text" placeholder="Введите сообщение" bind:value="{$newMessageText}">
+        <button id="button_send" type="submit" class="fa-sharp fa-regular fa-paper-plane"></button>
       </form>
     </div>
   </section>
 </main>
-
-
-
-
-
-
 
 <style>
     main{
@@ -432,6 +290,17 @@
         transform: scale(0.95);
     }
 
+    .recomendation_message{
+      width: max-content;
+      border: 2px solid black;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 200px;
+      margin-left: auto;
+      margin-right: auto;
+      background: #A636FE;
+      white-space: pre-wrap;
+    }
     section a {
         margin-right: 20px;
         border: 2px solid black;

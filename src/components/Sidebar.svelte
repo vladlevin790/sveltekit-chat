@@ -197,10 +197,16 @@
   <section class="footer">
     <div class="footer__content">
       <a href="#" class="fa-regular fa-user user"></a>
-      <h2 class="header__2 center">Chat</h2>
-      <button class="fa-solid fa-gear" style="color: #ffffff; background: none" on:click={toggleMenu}></button>
+      <h2 class="header__2 center">
+        <span >C</span>
+        <span >h</span>
+        <span >a</span>
+        <span >t</span>
+      </h2>
+      <button class="fa-solid fa-gear  rotate" style="color: #ffffff; background: none" on:click={toggleMenu}></button>
     </div>
   </section>
+
 
   {#if $showMenu}
     <div class="menu">
@@ -246,7 +252,7 @@ main{
 .section__1{
   border: 2px solid black;
   border-radius: 10px;
-  width: max-content;
+  max-width: 300px;
   display: flex;
   height: 30px;
   align-items: center;
@@ -257,6 +263,7 @@ main{
   margin-left: auto;
   margin-right: auto;
   background: #645656;
+  transition: .3s all;
 }
 section a {
   margin-right: 20px;
@@ -271,10 +278,10 @@ section a {
 }
 
 button{
-        border:none;
-        background-color: #645656 ;
-        font-size: 15px;
-        color:#C8C7C7;
+  border:none;
+  background-color: #645656 ;
+  font-size: 15px;
+  color:#C8C7C7;
 }
 
 input{
@@ -299,6 +306,11 @@ button:active {
 
 .section__1:active {
   transform: scale(0.95);
+}
+
+.section__1:hover{
+  background: #736868;
+  box-shadow: 1px 2px 3px black;
 }
 
 .footer{
@@ -394,14 +406,68 @@ button:active {
     font-size: 20px;
   }
 
-  main.dark {
-    background-color: #333 !important;
-    color: #fff !important;
+  .rotate {
+    display: inline-block;
+    transition: transform 0.5s ease;
   }
 
-  main.light {
-    background-color: #fff !important;
-    color: #333 !important;
+  .rotate:hover {
+    transform: rotate(360deg);
+    text-shadow: 1px 2px 3px rgba(220, 220, 253, 0.69);
   }
+
+  .header__2 {
+    display: inline-block;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    position: relative;
+  }
+
+  .header__2:hover span {
+    animation: shuffle 1s ease-in-out;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes shuffle {
+    0% {
+      transform: translateY(0) rotate(0);
+    }
+    25% {
+      transform: translateY(-2rem) rotate(90deg);
+    }
+    50% {
+      transform: translateY(-4rem) rotate(180deg);
+    }
+    75% {
+      transform: translateY(-2rem) rotate(270deg);
+    }
+    100% {
+      transform: translateY(0) rotate(360deg);
+    }
+  }
+
+  .header__2 span {
+    display: inline-block;
+    position: relative;
+    transition: all .3s ease;
+  }
+
+  .header__2 span:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+
+  .header__2 span:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  .header__2 span:nth-child(3) {
+    animation-delay: 0.15s;
+  }
+
+  .header__2 span:nth-child(4) {
+    animation-delay: 0.2s;
+  }
+
 
 </style>

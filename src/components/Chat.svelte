@@ -326,7 +326,7 @@
     </div>
   </section>
   {:else}
-    <section class="section__2">
+    <section class="section__recomendation">
      <p class="recomendation_message">Активных чатов пока нет, перейдите на окно слева и начните новый чат.</p>
     </section>
   {/if}
@@ -353,7 +353,7 @@
     .chat__header{
         border: 2px solid black;
         border-radius: 10px;
-        width: max-content;
+        max-width: 250px;
         display: flex;
         max-height: 25px;
         align-items: center;
@@ -375,16 +375,18 @@
     }
 
     .recomendation_message{
-      width: max-content;
+      width: 300px;
+      font-size: 20px;
       border: 2px solid black;
       border-radius: 10px;
       padding: 10px;
-      margin-top: 200px;
+      margin-top: 150px;
       margin-left: auto;
       margin-right: auto;
-      background: #A636FE;
+      background: #39393b;
       white-space: pre-wrap;
     }
+
     section a {
         margin-right: 20px;
         border: 2px solid black;
@@ -409,8 +411,13 @@
         box-shadow: 1px 1px 1px black;
     }
 
-    .messages__1{
-        display: grid;
+    .section__recomendation{
+      border: 2px solid black;
+      border-radius: 1px;
+      height: 440px;
+      overflow-y: auto;
+      backdrop-filter: blur(5px);
+      box-shadow: 1px 1px 1px black;
     }
 
     .message__1{
@@ -418,12 +425,21 @@
         border: 2px solid black;
         border-radius: 10px;
         padding: 10px;
-        margin-top: 10px;
+        margin-bottom: 15px;
         margin-right: 10px;
-        justify-self: end;
+        margin-left: auto;
+        /*justify-self: end;*/
         background: #A636FE;
         white-space: pre-wrap;
     }
+
+    .messages__1 {
+      display: flex;
+      flex-direction: column-reverse;
+      height: 100%;
+      overflow-y: scroll;
+    }
+
 
     .modal{
         display: flex;
@@ -432,9 +448,10 @@
         width: max-content;
         border-radius: 10px;
         padding: 10px;
-        margin-top: 10px;
+        margin-bottom: 10px;
         margin-right: 10px;
-        justify-self: end;
+        margin-left: auto;
+        /*justify-self: end;*/
         color: white;
     }
 
@@ -469,6 +486,10 @@
 
     button:active {
         transform: scale(0.9);
+    }
 
+    .welcome-message{
+      margin-left: auto;
+      margin-right: auto;
     }
 </style>

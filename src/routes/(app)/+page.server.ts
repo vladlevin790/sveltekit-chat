@@ -4,9 +4,9 @@ import type { Actions } from './$types';
 
 export const actions: Actions = {
 	async default({
-		request,
-		locals: { supabase }
-	}): Promise<ActionFailure<{ error: string; values?: { email: string } }>> {
+					  request,
+					  locals: { supabase }
+				  }): Promise<ActionFailure<{ error: string; values?: { email: string } }>> {
 		const formData = await request.formData();
 
 		const email = formData.get('email') as string;
@@ -45,6 +45,6 @@ export const actions: Actions = {
 			});
 		}
 
-		throw redirect(303, '/chat');
+		throw redirect(303, '/dashboard');
 	}
 };

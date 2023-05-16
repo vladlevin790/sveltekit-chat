@@ -2,6 +2,7 @@ import { AuthApiError } from '@supabase/supabase-js';
 import { fail, type ActionFailure } from '@sveltejs/kit';
 import type { Actions } from './$types';
 
+
 export const actions: Actions = {
 	async default({
 		request,
@@ -50,6 +51,7 @@ export const actions: Actions = {
 				}
 			});
 		}
+
 
 		return {
 			message: 'Please check your email for a magic link to log into the website.'

@@ -9,4 +9,5 @@ export const messages = writable([]),
     users = writable([]),
     searchResults = writable([]),
     selectedUser = writable(null),
-    selectedChat = writable(null);
+    selectedChat = writable(null),
+    owner = writable(null);

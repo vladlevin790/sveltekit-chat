@@ -3,16 +3,26 @@
   import { onMount } from 'svelte';
   import { createClient } from "@supabase/supabase-js";
   import { writable } from 'svelte/store';
-  import {users,searchResults,user,selectedUser,selectedChat} from "$lib/store.js";
+  import {users,searchResults,selectedUser,selectedChat,owner,user} from "$lib/store.js";
+  import {supabase} from "$lib/supabaseClient.js";
 
-  const supabaseUrl = "https://vayakipdpailwnuozwvc.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWFraXBkcGFpbHdudW96d3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA1Mzk1MzEsImV4cCI6MTk5NjExNTUzMX0.Ax_xuXTtaKDFNRO2TPMMb1aLJMU-f42ufwbeqGP27rA";
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  export let userus;
 
   let query = '';
 
   let searchInput;
   let showMenu = writable(false);
+
+  // async function checkAuth() {
+  //   const { data: { user }, error } = await supabase.auth.getUser();
+  //   if (error) {
+  //     console.error("Ошибка аутентификации:",error);
+  //     return false;
+  //   }
+  //   console.log("Пользователь:", user);
+  //   return user !== null;
+  // }
+
 
   function toggleMenu() {
     showMenu.update(value => !value);
@@ -65,10 +75,11 @@
     }
 
     const chatId = lastChatData[0].id;
-
+    console.log(owner);
     const { data: userChatData, error: userChatError } = await supabase
             .from("user_chat")
-            .insert([{ id_user: user.id, id_chat: chatId }]);
+            .insert([{ id_user: user.id, id_chat: chatId, id_owner: userus}])
+            .single();
 
     if (userChatError) {
       console.error(userChatError);
@@ -146,10 +157,9 @@
     const body = document.querySelector("body");
 
     await loadUsers();
+    console.log(userus);
   });
 
-  export let loggedIn;
-  export let data;
 </script>
 
 

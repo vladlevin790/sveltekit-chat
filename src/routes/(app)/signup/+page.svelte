@@ -5,8 +5,10 @@
 	export let form: ActionData;
 	let loading = false;
 
-	const handleSubmit: SubmitFunction = () => {
+	const  handleSubmit: SubmitFunction = () => {
+
 		loading = true;
+
 		return async ({ result }) => {
 			await applyAction(result);
 			loading = false;

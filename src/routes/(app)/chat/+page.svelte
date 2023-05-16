@@ -4,12 +4,13 @@
     import type { PageData } from './$types';
 
     export let data: PageData;
-    $: ({ testTable, user, userChats } = data);
+    $: ({ userChats, userus } = data);
+
 </script>
 
 <main>
-    <Sidebar />
-    <Chat userChats={userChats} />
+    <Sidebar {userus} />
+    <Chat {userus}/>
 </main>
 
 <style>
@@ -17,3 +18,4 @@
         display: flex;
     }
 </style>
+

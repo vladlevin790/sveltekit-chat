@@ -24,6 +24,23 @@
   // }
 
 
+  const checkUserExists = async () => {
+    const { data: existingUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', userus.id)
+            .single();
+
+    if(existingUser !== null){
+      console.log("пользователь существует")
+    }else{
+      const { data: userusIns, error: userurInsError } = await supabase
+              .from("users")
+              .insert([{ id: userus.id, username: userus.email,password: userus.aud , last_login_at: new Date()}])
+              .single();
+    };
+  };
+
   function toggleMenu() {
     showMenu.update(value => !value);
   }
@@ -78,7 +95,7 @@
     console.log(owner);
     const { data: userChatData, error: userChatError } = await supabase
             .from("user_chat")
-            .insert([{ id_user: user.id, id_chat: chatId, id_owner: userus}])
+            .insert([{ id_user: user.id, id_chat: chatId, id_owner: userus.id}])
             .single();
 
     if (userChatError) {
@@ -94,6 +111,8 @@
     const { data: userChatDataLoad, error: userChatError } = await supabase
             .from("user_chat")
             .select("id_user")
+            .eq("id_owner", userus.id);
+
 
     if (userChatError) {
       console.error(userChatError);
@@ -151,7 +170,10 @@
       if (event.target !== menu && event.target !== settingsBtn) {
         showMenu.set(false);
       }
+
+      checkUserExists();
     });
+
 
     const themeSelect = document.getElementById("theme");
     const body = document.querySelector("body");
@@ -159,6 +181,8 @@
     await loadUsers();
     console.log(userus);
   });
+
+  console.log(userus);
 
 </script>
 

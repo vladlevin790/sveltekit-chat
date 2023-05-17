@@ -25,6 +25,6 @@ export const load: PageLoad = async ({ parent }) => {
 	const { data: userChats } = await supabase.from('users').select('id');
 	return {
 		userChats,
-		userus: session.user.id,
+		userus: session.user,
 	};
 };

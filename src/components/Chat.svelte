@@ -14,6 +14,8 @@
 
   const { subscribe, set, update } = writable(0);
 
+  export let userus;
+
   // export async function addMessage(event) {
   //   if ($newMessageText.trim() === '') {
   //     return;
@@ -202,7 +204,7 @@
   }
 
   async function fetchMessages() {
-    const { data: messagesData, error: messagesError } = await supabase.from('message').select('*').order('time', { ascending: false });
+    const { data: messagesData, error: messagesError } = await supabase.from('message').select('*').order('user_id', userus.id);
     const { data: userData, error: userError } = await supabase.from('users').select('*').limit(1);
 
     if (messagesError) {

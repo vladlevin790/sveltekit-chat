@@ -16,6 +16,59 @@
 
   export let userus;
 
+  // export async function addMessage(event) {
+  //   if ($newMessageText.trim() === '') {
+  //     return;
+  //   }
+  //
+  //   const words = $newMessageText.trim().split(' ');
+  //   let newMessageTextFormatted = '';
+  //
+  //   let currentLineLength = 0;
+  //   for (let i = 0; i < words.length; i++) {
+  //     const word = words[i];
+  //     if (word.length > 20) {
+  //       const slicedWord = word.slice(0, 20);
+  //       newMessageTextFormatted += slicedWord + '\n';
+  //       currentLineLength = 0;
+  //       for (let j = 20; j < word.length; j += 20) {
+  //         const nextSlice = word.slice(j, j + 20);
+  //         newMessageTextFormatted += nextSlice + '\n';
+  //       }
+  //     } else if (currentLineLength + word.length > 20) {
+  //       newMessageTextFormatted += '\n';
+  //       currentLineLength = 0;
+  //       i--;
+  //     } else {
+  //       newMessageTextFormatted += word + ' ';
+  //       currentLineLength += word.length + 1;
+  //     }
+  //   }
+  //
+  //   let messageText = newMessageTextFormatted.substring(0, 100);
+  //
+  //   console.log(123);
+  //
+  //   if (newMessageTextFormatted.length > 100) {
+  //     messageText += '...';
+  //   }
+  //
+  //   const { data, error } = await supabase.from('message').insert({
+  //     message: messageText,
+  //     time: new Date()
+  //   });
+  //
+  //   if (error) {
+  //     console.error(error);
+  //   } else {
+  //     messages.set([...$messages, data]);
+  //   }
+  //
+  //   newMessageText.set('');
+  //   uploadedImage.set(null);
+  //   event.preventDefault();
+  // }
+
   export async function addMessage(event) {
     if ($newMessageText.trim() === '') {
       return;
@@ -253,36 +306,32 @@
     <section class="section__2" id="chatId">
       <div class="messages__1" id="messages1">
 
-        {#each $messages.slice().reverse() as message, i}
-
-          {#if message && message.chat === $selectedChat}
-            <div class={message.id_owner === userus.id ? 'message__1' : 'message__2'} on:contextmenu|preventDefault|stopPropagation={(event) => selectMessage(event, $messages.length - 1 - i)}>
-              {#if message && message.message}
-                <p class="paragraph_1">{message.message}</p>
-              {/if}
-            </div>
-          {/if}
-
-
-          {#if message.id_owner === userus.id}
-            {#if $showModal && $selectedMessageIndex ===  $messages.length - 1 - i}
-              <div class="modal">
-                <div class="modal-content">
-                  <h2>Изменить сообщение</h2>
-                  <form on:submit|preventDefault={editMessage}>
-                    <div class="buttons">
-                      <button type="submit">сохранить</button>
-                      <button type="button" on:click={() => cancelEdit()}>отменить</button>
-                      <button on:click={() => deleteMessage($selectedMessageIndex)}>удалить</button>
-                    </div>
-                  </form>
-                </div>
+        {#each $messages as message, i}
+            {#if message && message.chat === $selectedChat}
+              <div class={message.id_owner === userus.id ? 'message__1' : 'message__2'} on:contextmenu|preventDefault={(event) => selectMessage(event, i)}>
+                {#if message && message.message}
+                  <p class="paragraph_1">{message.message}</p>
+                {/if}
               </div>
             {/if}
+
+
+
+          {#if $showModal && $selectedMessageIndex === i}
+            <div class="modal">
+              <div class="modal-content">
+                <h2>Изменить сообщение</h2>
+                <form on:submit|preventDefault={editMessage}>
+                  <div class="buttons">
+                    <button type="submit">сохранить</button>
+                    <button type="button" on:click={() => cancelEdit()}>отменить</button>
+                    <button on:click={() => deleteMessage($selectedMessageIndex)}>удалить</button>
+                  </div>
+                </form>
+              </div>
+            </div>
           {/if}
-
         {/each}
-
       </div>
     </section>
     <section class="section__3">
@@ -409,8 +458,7 @@
     }
 
     .messages__1 {
-      display: flex;
-      flex-direction: column-reverse;
+      margin-top: 20px;
       height: 100%;
       overflow-y: scroll;
     }

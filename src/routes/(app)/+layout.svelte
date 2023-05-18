@@ -2,6 +2,7 @@
 	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/stores';
+	import {selectedUser,selectedChat} from "../../lib/store.js"
 
 	let loading = false;
 
@@ -9,8 +10,12 @@
 		loading = true;
 		return async ({ result }) => {
 			if (result.type === 'redirect') {
+				selectedUser.set(null);
+				selectedChat.set(null);
 				await invalidate('supabase:auth');
 			} else {
+				selectedUser.set(null);
+				selectedChat.set(null);
 				await applyAction(result);
 			}
 			loading = false;

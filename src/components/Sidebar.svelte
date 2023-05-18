@@ -13,17 +13,6 @@
   let searchInput;
   let showMenu = writable(false);
 
-  // async function checkAuth() {
-  //   const { data: { user }, error } = await supabase.auth.getUser();
-  //   if (error) {
-  //     console.error("Ошибка аутентификации:",error);
-  //     return false;
-  //   }
-  //   console.log("Пользователь:", user);
-  //   return user !== null;
-  // }
-
-
   const checkUserExists = async () => {
     const { data: existingUser } = await supabase
             .from('users')
@@ -41,6 +30,7 @@
     };
   };
 
+
   function toggleMenu() {
     showMenu.update(value => !value);
   }
@@ -54,19 +44,42 @@
     searchResults.update(value => value.filter(u => u.id !== user.id));
     showMenu.set(false);
 
-    const chatName = `Chat with ${user.username}`;
+    const chatName = `Chat between ${user.username} and ${userus.email}`;
 
     const { data: existingChatData, error: existingChatError } = await supabase
-            .from("chat")
-            .select("id")
-            .eq("name", chatName)
+            .from("user_chat")
+            .select("id_chat")
+            .in("id_user", [userus.id, user.id])
+            .in("id_owner", [userus.id, user.id])
             .single();
 
     if (existingChatData) {
       console.log("Chat with this user already exists!");
       selectedUser.set(user);
-      const chatId = existingChatData.id;
+      const chatId = existingChatData.id_chat;
       selectedChat.set(chatId);
+
+      const { data: userChatData, error: userChatError } = await supabase
+              .from("user_chat")
+              .select("*")
+              .or(`id_user.eq.${userus.id},id_owner.eq.${userus.id}`)
+              .single();
+
+      if (userChatError) {
+        console.error(userChatError);
+      } else if (!userChatData) {
+        const { data: userChatInsertData, error: userChatInsertError } = await supabase
+                .from("user_chat")
+                .insert([{ id_user: user.id, id_chat: chatId, id_owner: userus.id }])
+                .single();
+
+        if (userChatInsertError) {
+          console.error(userChatInsertError);
+        }
+      }
+
+      await loadUsers();
+
       return;
     }
 
@@ -95,7 +108,7 @@
     console.log(owner);
     const { data: userChatData, error: userChatError } = await supabase
             .from("user_chat")
-            .insert([{ id_user: user.id, id_chat: chatId, id_owner: userus.id}])
+            .insert([{ id_user: user.id, id_chat: chatId, id_owner: userus.id }])
             .single();
 
     if (userChatError) {
@@ -104,14 +117,16 @@
       console.log("Chat created successfully!");
       selectedUser.set(user);
       selectedChat.set(chatId);
+
+      await loadUsers();
     }
   }
 
   async function loadUsers() {
     const { data: userChatDataLoad, error: userChatError } = await supabase
             .from("user_chat")
-            .select("id_user")
-            .eq("id_owner", userus.id);
+            .select("*")
+            .or(`id_user.eq.${userus.id},id_owner.eq.${userus.id}`);
 
 
     if (userChatError) {
@@ -119,7 +134,14 @@
       return;
     }
 
-    const userIds = userChatDataLoad.map(row => row.id_user);
+
+    const userIds = userChatDataLoad.map(row => {
+      if (userus.id === row.id_owner) {
+        return row.id_user;
+      } else if (userus.id === row.id_user) {
+        return row.id_owner;
+      }
+    });
 
     const { data: usersData, error: usersError } = await supabase
             .from("users")
@@ -232,10 +254,9 @@
     <div class="footer__content">
       <a href="#" class="fa-regular fa-user user"></a>
       <h2 class="header__2 center">
-        <span >C</span>
-        <span >h</span>
-        <span >a</span>
-        <span >t</span>
+        <span >Ч</span>
+        <span >А</span>
+        <span >Т</span>
       </h2>
       <button class="fa-solid fa-gear  rotate" style="color: #ffffff; background: none" on:click={toggleMenu}></button>
     </div>
@@ -268,88 +289,88 @@
     flex-direction: column;
   }
 
-.header__1{
-  border: 2px solid;
-  border-radius: 10px;
-  padding: 10px;
-  width: max-content;
-  display:flex ;
-  margin-left: auto;
-  margin-right: auto;
-  background: #645656;
-}
+  .header__1{
+    border: 2px solid;
+    border-radius: 10px;
+    padding: 10px;
+    width: max-content;
+    display:flex ;
+    margin-left: auto;
+    margin-right: auto;
+    background: #645656;
+  }
 
-main{
-  padding: 10px;
-  padding-top: 10px;
-}
-.section__1{
-  border: 2px solid black;
-  border-radius: 10px;
-  max-width: 300px;
-  display: flex;
-  height: 30px;
-  align-items: center;
-  padding: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  margin-left: 20px;
-  margin-left: auto;
-  margin-right: auto;
-  background: #645656;
-  transition: .3s all;
-}
-section a {
-  margin-right: 20px;
-  border: 2px solid black;
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 20px;
-}
+  main{
+    padding: 10px;
+    padding-top: 10px;
+  }
+  .section__1{
+    border: 2px solid black;
+    border-radius: 10px;
+    max-width: 300px;
+    display: flex;
+    height: 30px;
+    align-items: center;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    background: #645656;
+    transition: .3s all;
+  }
+  section a {
+    margin-right: 20px;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 20px;
+  }
 
-.block__1{
-  line-height: 0;
-}
+  .block__1{
+    line-height: 0;
+  }
 
-button{
-  border:none;
-  background-color: #645656 ;
-  font-size: 15px;
-  color:#C8C7C7;
-}
+  button{
+    border:none;
+    background-color: #645656 ;
+    font-size: 15px;
+    color:#C8C7C7;
+  }
 
-input{
-  border-radius:5px ;
-  border: none;
-  background: #645656;
-  color: white;
-}
+  input{
+    border-radius:5px ;
+    border: none;
+    background: #645656;
+    color: white;
+  }
 
-.user{
-  border-radius: 30px;
-  text-align: center;
-}
+  .user{
+    border-radius: 30px;
+    text-align: center;
+  }
 
-a:active {
-  transform: scale(0.9);
-}
+  a:active {
+    transform: scale(0.9);
+  }
 
-button:active {
-  transform: scale(0.9);
-}
+  button:active {
+    transform: scale(0.9);
+  }
 
-.section__1:active {
-  transform: scale(0.95);
-}
+  .section__1:active {
+    transform: scale(0.95);
+  }
 
-.section__1:hover{
-  background: #736868;
-  box-shadow: 1px 2px 3px black;
-}
+  .section__1:hover{
+    background: #736868;
+    box-shadow: 1px 2px 3px black;
+  }
 
-.footer{
-  margin-top: auto;
-}
+  .footer{
+    margin-top: auto;
+  }
   .footer__content {
     display: flex;
     justify-content: space-between;

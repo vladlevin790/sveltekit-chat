@@ -10,7 +10,7 @@
 		owner,
 		messages,
 		showModal,
-		uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser
+		uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser,userIcon
 	} from "../../lib/store.js"
 
 
@@ -29,6 +29,7 @@
 				uploadedImage.set([]);
 				selectedMessageIndex.set(-1);
 				timeStatus.set(null);
+				userIcon.set('');
 				sessionUser.set(null)
 				await invalidate('supabase:auth');
 			} else {

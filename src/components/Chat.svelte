@@ -242,7 +242,11 @@
 <main class="main_chat">
   <section class="chat__header section__1">
     {#if $selectedUser}
-      <a href="#" class="fa-regular fa-user user"></a>
+      {#if $selectedUser.user_icon != null}
+        <img src={$selectedUser.user_icon} class="fa-regular fa-user user  userIcon" />
+      {:else}
+        <a href="#" class="fa-regular fa-user user"></a>
+      {/if}
       <div class="block__1">
         <p class="User__Name_1" id="UserName1">{$selectedUser.username}</p>
         <p class="User__Status_1" id="UserStatus1">last seen: {$selectedUser.last_login_at}</p>
@@ -329,6 +333,10 @@
         transform: scale(0.9);
     }
 
+    .section__1{
+      transition: .3s all;
+    }
+
     .section__1:active {
         transform: scale(0.95);
     }
@@ -413,8 +421,22 @@
       overflow-y: scroll;
     }
 
+    .userIcon{
+      border: 2px solid black;
+      border-radius: 30px;
+      font-size: 20px;
+      max-width: 40px;
+      min-height: 41px;
+      transition: .3s all
+    }
 
+    .userIcon:active{
+      transform: scale(0.9);
+    }
 
+    section img {
+      margin-right: 20px;
+    }
 
     .modal{
         display: flex;

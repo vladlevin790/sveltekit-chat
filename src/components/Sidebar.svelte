@@ -1,9 +1,9 @@
 <script>
   import '../app.css';
-  import { onMount } from 'svelte';
+  import { onMount , onDestroy} from 'svelte';
   import { createClient } from "@supabase/supabase-js";
   import { writable } from 'svelte/store';
-  import {users, searchResults, selectedUser, selectedChat, owner, user, timeStatus, sessionUser} from "$lib/store.js";
+  import {users, searchResults, selectedUser, selectedChat, owner, newName, newIcon,userIcon, sessionUser,showMenu} from "$lib/store.js";
 
   const supabaseUrl = 'https://vayakipdpailwnuozwvc.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWFraXBkcGFpbHdudW96d3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA1Mzk1MzEsImV4cCI6MTk5NjExNTUzMX0.Ax_xuXTtaKDFNRO2TPMMb1aLJMU-f42ufwbeqGP27rA';
@@ -14,7 +14,6 @@
   let query = '';
 
   let searchInput;
-  let showMenu = writable(false);
 
   async function checkUserExists()  {
     const { data: existingUser } = await supabase
@@ -55,6 +54,10 @@
 
 
   function toggleMenu() {
+    showMenu.update(value => !value);
+  }
+
+  function toggleClose(){
     showMenu.update(value => !value);
   }
 
@@ -185,6 +188,32 @@
     users.set(updatedUsersData);
   }
 
+  async function ownerAvatar(){
+    const {data,error} = await supabase.from("users").select("*").eq("id",$sessionUser.id)
+
+    if(data){
+      userIcon.set(data)
+    }
+
+    if(error){
+      console.log("не работает")
+    }
+  }
+
+
+  const updateUser = async () => {
+
+    const { error } = await supabase
+            .from('users')
+            .update({ username: $newName, user_icon: $newIcon })
+            .eq('id', $sessionUser.id);
+
+    if (error) {
+      console.error('Error updating user data:', error);
+      return;
+    }
+    await ownerAvatar()
+  };
 
   onMount(async () => {
     const searchButton = document.getElementById("search-button");
@@ -217,25 +246,13 @@
 
     searchButton.addEventListener("click", handleSearchButtonClick);
 
-    const menu = document.querySelector('.menu');
-    const settingsBtn = document.querySelector('.fa-solid.fa-gear');
-
-    document.addEventListener('click', (event) => {
-      if (event.target !== menu && event.target !== settingsBtn) {
-        showMenu.set(false);
-      }
-
-      console.log($users);
-
-    });
-
     await checkUserExists();
 
-    const themeSelect = document.getElementById("theme");
-    const body = document.querySelector("body");
+    await ownerAvatar()
 
     await loadUsers();
     console.log(userus);
+
   });
 
   console.log(userus);
@@ -244,7 +261,6 @@
 
 
 <main class="main_sidebar">
-
   <section class="block__head">
     <div class="header__1">
       <button type="submit" class="fa-solid fa-magnifying-glass" id="search-button"></button>
@@ -255,7 +271,11 @@
     {#if $searchResults.length > 0}
       {#each $searchResults as user}
         <div class="search-result">
-          <a href="#" class="fa-regular fa-user user" on:click={async () => {await startChat(user);}}></a>
+          {#if user.user_icon != null}
+            <img src={user.user_icon} class="fa-regular fa-user user" />
+          {:else}
+            <a href="#" class="fa-regular fa-user user"></a>
+          {/if}
           <div>{user.username}</div>
         </div>
       {/each}
@@ -272,7 +292,11 @@
     <div id="user-sections">
       {#each $users as user}
         <section class="section__1" id={`user-section-${user.id}`} on:click={async () => {await startChat(user);}}>
-          <a href="#" class="fa-regular fa-user user"></a>
+            {#if user.user_icon != null}
+              <img src={user.user_icon} class="fa-regular fa-user user" />
+            {:else}
+              <a href="#" class="fa-regular fa-user user"></a>
+            {/if}
           <div class="block__1">
             <p class="User__Name_1" id={`UserName-${user.id}`}>{user.username}</p>
             <p class="User__Status_1" id={`UserStatus-${user.id}`}> last seen: {user.last_login_at.toString()}</p>
@@ -287,7 +311,13 @@
 
   <section class="footer">
     <div class="footer__content">
-      <a href="#" class="fa-regular fa-user user"></a>
+      {#each $userIcon as icon}
+        {#if icon.user_icon != null}
+            <img src={icon.user_icon} class="fa-regular fa-user user" />
+          {:else}
+            <a href="#" class="fa-regular fa-user user"></a>
+        {/if}
+      {/each}
       <h2 class="header__2 center">
         <span >Ч</span>
         <span >А</span>
@@ -299,17 +329,30 @@
 
 
   {#if $showMenu}
+    {#each $userIcon as user}
     <div class="menu">
-      <form >
+      <form on:submit|preventDefault={updateUser}>
+          <button class = "exit_btn" on:click={toggleClose}>X</button>
+
+          <p> имя пользователя : {user.username}</p>
+
+          <input class = "new__name" type="text" id="newName" bind:value={$newName}>
+
+          <img class="modal_image" src={user.user_icon} alt="пиздец"/>
+
+          <label for="newIcon">Ссылка на картинку:</label>
+          <input class = "new__icon" type="text" id="newIcon" bind:value={$newIcon}>
+
         <label>Тема:</label>
         <select id="theme">
           <option value="dark">Темная</option>
           <option value="light">Светлая</option>
         </select>
         <button class="btn-toggle">поменять</button>
-        <button type="submit">Сохранить</button>
+        <button class = "btn_save_form" type="submit" on:click={updateUser}  on:click={toggleClose}>Сохранить</button>
       </form>
     </div>
+    {/each}
   {/if}
 
 </main>
@@ -363,6 +406,10 @@
     font-size: 20px;
   }
 
+  section img {
+    margin-right: 20px;
+  }
+
   .block__1{
     line-height: 0;
   }
@@ -387,6 +434,10 @@
   }
 
   a:active {
+    transform: scale(0.9);
+  }
+
+  img:active {
     transform: scale(0.9);
   }
 
@@ -496,6 +547,15 @@
     font-size: 20px;
   }
 
+  img{
+    border: 2px solid black;
+    border-radius: 10px;
+    font-size: 20px;
+    max-width: 40px;
+    min-height: 41px;
+    transition: .3s all;
+  }
+
   .rotate {
     display: inline-block;
     transition: transform 0.5s ease;
@@ -517,6 +577,16 @@
   .header__2:hover span {
     animation: shuffle 1s ease-in-out;
     animation-fill-mode: forwards;
+  }
+
+  .modal_image{
+    max-width: 200px;
+    min-height: 150px;
+  }
+
+  .exit_btn{
+    background: none;
+    margin-left: 200px;
   }
 
   @keyframes shuffle {

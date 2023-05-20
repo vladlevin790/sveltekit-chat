@@ -4,7 +4,18 @@
   import { writable } from 'svelte/store';
   import { createClient } from '@supabase/supabase-js';
   import { readable, derived } from 'svelte/store';
-  import { messages,selectedMessageIndex,newMessageText,showModal,uploadedImage,user,users,selectedUser,selectedChat} from '../lib/store.js'
+  import {
+    messages,
+    selectedMessageIndex,
+    newMessageText,
+    showModal,
+    uploadedImage,
+    user,
+    users,
+    selectedUser,
+    selectedChat,
+    sessionUser
+  } from '../lib/store.js'
   import { onDestroy } from "svelte";
   import { invalidate } from "$app/navigation";
 
@@ -15,59 +26,6 @@
   const { subscribe, set, update } = writable(0);
 
   export let userus;
-
-  // export async function addMessage(event) {
-  //   if ($newMessageText.trim() === '') {
-  //     return;
-  //   }
-  //
-  //   const words = $newMessageText.trim().split(' ');
-  //   let newMessageTextFormatted = '';
-  //
-  //   let currentLineLength = 0;
-  //   for (let i = 0; i < words.length; i++) {
-  //     const word = words[i];
-  //     if (word.length > 20) {
-  //       const slicedWord = word.slice(0, 20);
-  //       newMessageTextFormatted += slicedWord + '\n';
-  //       currentLineLength = 0;
-  //       for (let j = 20; j < word.length; j += 20) {
-  //         const nextSlice = word.slice(j, j + 20);
-  //         newMessageTextFormatted += nextSlice + '\n';
-  //       }
-  //     } else if (currentLineLength + word.length > 20) {
-  //       newMessageTextFormatted += '\n';
-  //       currentLineLength = 0;
-  //       i--;
-  //     } else {
-  //       newMessageTextFormatted += word + ' ';
-  //       currentLineLength += word.length + 1;
-  //     }
-  //   }
-  //
-  //   let messageText = newMessageTextFormatted.substring(0, 100);
-  //
-  //   console.log(123);
-  //
-  //   if (newMessageTextFormatted.length > 100) {
-  //     messageText += '...';
-  //   }
-  //
-  //   const { data, error } = await supabase.from('message').insert({
-  //     message: messageText,
-  //     time: new Date()
-  //   });
-  //
-  //   if (error) {
-  //     console.error(error);
-  //   } else {
-  //     messages.set([...$messages, data]);
-  //   }
-  //
-  //   newMessageText.set('');
-  //   uploadedImage.set(null);
-  //   event.preventDefault();
-  // }
 
   export async function addMessage(event) {
     if ($newMessageText.trim() === '') {
@@ -123,7 +81,7 @@
       message: messageText,
       time: new Date(),
       user_id: $selectedUser.id,
-      id_owner: userus.id,
+      id_owner: $sessionUser.id,
       chat: chatId
     });
 
@@ -208,7 +166,7 @@
     const { data: messagesData, error: messagesError } = await supabase
             .from('message')
             .select('*')
-            .or(`user_id.eq.${userus.id},id_owner.eq.${userus.id}`)
+            .or(`user_id.eq.${$sessionUser.id},id_owner.eq.${$sessionUser.id}`)
             .order('id');
 
     const { data: userData, error: userError } = await supabase.from('users').select('*').limit(1);
@@ -229,7 +187,7 @@
 
   onMount(async () => {
 
-    await fetchMessages();
+    sessionUser.set(userus);
 
     const { data, error } = await supabase.from('message').select('*').order('time', { ascending: false });
     const buttonSend = document.getElementById('button_send');
@@ -271,20 +229,13 @@
     } else {
       messages.set(data);
     }
-
-    const mySubscription = supabase
-            .from('message')
-            .eq('chat', $selectedChat)
-            .on('INSERT', (payload) => {
-              if (payload.new.chat === $selectedChat) {
-                messages.set([...$messages, payload.new]);
-                messages.update((msgs) => msgs.filter((m) => m.chat === $selectedChat));
-              }
-            })
-            .subscribe();
-
-    return mySubscription;
   };
+
+  $: {
+    if ($selectedUser || $selectedChat) {
+     fetchMessages();
+    }
+  }
 
 </script>
 
@@ -294,7 +245,7 @@
       <a href="#" class="fa-regular fa-user user"></a>
       <div class="block__1">
         <p class="User__Name_1" id="UserName1">{$selectedUser.username}</p>
-        <p class="User__Status_1" id="UserStatus1">last seen {$selectedUser.last_login_at}</p>
+        <p class="User__Status_1" id="UserStatus1">last seen: {$selectedUser.last_login_at}</p>
       </div>
     {:else}
       <p class="welcome-message">Привет!)</p>
@@ -308,7 +259,7 @@
 
         {#each $messages as message, i}
             {#if message && message.chat === $selectedChat}
-              <div class={message.id_owner === userus.id ? 'message__1' : 'message__2'} on:contextmenu|preventDefault={(event) => selectMessage(event, i)}>
+              <div class={message.id_owner === $sessionUser.id ? 'message__1' : 'message__2'} on:contextmenu|preventDefault={(event) => selectMessage(event, i)}>
                 {#if message && message.message}
                   <p class="paragraph_1">{message.message}</p>
                 {/if}
@@ -337,7 +288,6 @@
     <section class="section__3">
       <div>
         <form enctype="multipart/form-data" on:submit="{addMessage}">
-          <!-- <input class="fa-regular fa-paperclip" id="buttonClip" type="file" on:change="{handleFileUpload}"> -->
           <input class="input_message" id="message" type="text" placeholder="Введите сообщение" bind:value="{$newMessageText}">
           <button id="button_send" type="submit" class="fa-sharp fa-regular fa-paper-plane"></button>
         </form>
@@ -437,7 +387,7 @@
         border-radius: 10px;
         padding: 10px;
         margin-bottom: 15px;
-        margin-right: 10px;
+        margin-right: 20px;
         margin-left: auto;
         /*justify-self: end;*/
         background: #A636FE;
@@ -451,7 +401,7 @@
       padding: 10px;
       margin-bottom: 15px;
       margin-right: auto;
-      margin-left: 10px;
+      margin-left: 20px;
       /*justify-self: end;*/
       background: #0f6fff;
       white-space: pre-wrap;

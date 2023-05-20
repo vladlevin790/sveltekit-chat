@@ -3,8 +3,11 @@
   import { onMount } from 'svelte';
   import { createClient } from "@supabase/supabase-js";
   import { writable } from 'svelte/store';
-  import {users,searchResults,selectedUser,selectedChat,owner,user} from "$lib/store.js";
-  import {supabase} from "$lib/supabaseClient.js";
+  import {users, searchResults, selectedUser, selectedChat, owner, user, timeStatus, sessionUser} from "$lib/store.js";
+
+  const supabaseUrl = 'https://vayakipdpailwnuozwvc.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWFraXBkcGFpbHdudW96d3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA1Mzk1MzEsImV4cCI6MTk5NjExNTUzMX0.Ax_xuXTtaKDFNRO2TPMMb1aLJMU-f42ufwbeqGP27rA';
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   export let userus;
 
@@ -13,20 +16,40 @@
   let searchInput;
   let showMenu = writable(false);
 
-  const checkUserExists = async () => {
+  async function checkUserExists()  {
     const { data: existingUser } = await supabase
             .from('users')
             .select('id')
-            .eq('id', userus.id)
+            .eq('id', $sessionUser.id)
             .single();
 
     if(existingUser !== null){
+      const moscowOffset = 3 * 60;
       console.log("пользователь существует")
-    }else{
       const { data: userusIns, error: userurInsError } = await supabase
               .from("users")
-              .insert([{ id: userus.id, username: userus.email,password: userus.aud , last_login_at: new Date()}])
+              .update({ last_login_at:new Date(Date.now() + moscowOffset * 60 * 1000)})
+              .eq('id', $sessionUser.id);
+    }else{
+      let emailParts = userus.email.split("@");
+      let username = emailParts[0];
+
+      const { data: userusIns, error: userurInsError } = await supabase
+              .from("users")
+              .insert([
+                {
+                  id: userus.id,
+                  username: username,
+                  password: $sessionUser.aud,
+                  last_login_at: new Date()
+                }
+              ])
               .single();
+
+      if(userurInsError){
+        console.log('ошибка');
+      }
+
     };
   };
 
@@ -49,8 +72,8 @@
     const { data: existingChatData, error: existingChatError } = await supabase
             .from("user_chat")
             .select("id_chat")
-            .in("id_user", [userus.id, user.id])
-            .in("id_owner", [userus.id, user.id])
+            .in("id_user", [$sessionUser.id, user.id])
+            .in("id_owner", [$sessionUser.id, user.id])
             .single();
 
     if (existingChatData) {
@@ -62,16 +85,17 @@
       const { data: userChatData, error: userChatError } = await supabase
               .from("user_chat")
               .select("*")
-              .or(`id_user.eq.${userus.id},id_owner.eq.${userus.id}`)
+              .or(`id_user.eq.${$sessionUser.id},id_owner.eq.${$sessionUser.id}`)
+              .limit(1)
               .single();
 
       if (userChatError) {
         console.error(userChatError);
-      } else if (!userChatData) {
+
+    } else if (!userChatData) {
         const { data: userChatInsertData, error: userChatInsertError } = await supabase
                 .from("user_chat")
-                .insert([{ id_user: user.id, id_chat: chatId, id_owner: userus.id }])
-                .single();
+
 
         if (userChatInsertError) {
           console.error(userChatInsertError);
@@ -108,7 +132,7 @@
     console.log(owner);
     const { data: userChatData, error: userChatError } = await supabase
             .from("user_chat")
-            .insert([{ id_user: user.id, id_chat: chatId, id_owner: userus.id }])
+            .insert([{ id_user: user.id, id_chat: chatId, id_owner: $sessionUser.id }])
             .single();
 
     if (userChatError) {
@@ -126,19 +150,17 @@
     const { data: userChatDataLoad, error: userChatError } = await supabase
             .from("user_chat")
             .select("*")
-            .or(`id_user.eq.${userus.id},id_owner.eq.${userus.id}`);
-
+            .or(`id_user.eq.${$sessionUser.id},id_owner.eq.${$sessionUser.id}`);
 
     if (userChatError) {
       console.error(userChatError);
       return;
     }
 
-
     const userIds = userChatDataLoad.map(row => {
-      if (userus.id === row.id_owner) {
+      if ($sessionUser.id === row.id_owner) {
         return row.id_user;
-      } else if (userus.id === row.id_user) {
+      } else if ($sessionUser.id === row.id_user) {
         return row.id_owner;
       }
     });
@@ -153,8 +175,16 @@
       return;
     }
 
-    users.set(usersData);
+    const updatedUsersData = usersData.map(user => {
+      if (user.last_login_at) {
+        user.last_login_at = new Date(user.last_login_at).getHours() + ' : ' + new Date(user.last_login_at).getMinutes();
+      }
+      return user;
+    });
+
+    users.set(updatedUsersData);
   }
+
 
   onMount(async () => {
     const searchButton = document.getElementById("search-button");
@@ -183,6 +213,8 @@
       }
     };
 
+    sessionUser.set(userus);
+
     searchButton.addEventListener("click", handleSearchButtonClick);
 
     const menu = document.querySelector('.menu');
@@ -193,9 +225,11 @@
         showMenu.set(false);
       }
 
-      checkUserExists();
+      console.log($users);
+
     });
 
+    await checkUserExists();
 
     const themeSelect = document.getElementById("theme");
     const body = document.querySelector("body");
@@ -221,7 +255,7 @@
     {#if $searchResults.length > 0}
       {#each $searchResults as user}
         <div class="search-result">
-          <a href="#" class="fa-regular fa-user user" on:click={() => startChat(user)}></a>
+          <a href="#" class="fa-regular fa-user user" on:click={async () => {await startChat(user);}}></a>
           <div>{user.username}</div>
         </div>
       {/each}
@@ -237,14 +271,15 @@
   {#if $users.length > 0}
     <div id="user-sections">
       {#each $users as user}
-        <section class="section__1" id={`user-section-${user.id}`} on:click={() => startChat(user)}>
+        <section class="section__1" id={`user-section-${user.id}`} on:click={async () => {await startChat(user);}}>
           <a href="#" class="fa-regular fa-user user"></a>
           <div class="block__1">
             <p class="User__Name_1" id={`UserName-${user.id}`}>{user.username}</p>
-            <p class="User__Status_1" id={`UserStatus-${user.id}`}>last seen {user.last_login_at}</p>
+            <p class="User__Status_1" id={`UserStatus-${user.id}`}> last seen: {user.last_login_at.toString()}</p>
           </div>
         </section>
       {/each}
+
     </div>
   {:else}
     <div></div>

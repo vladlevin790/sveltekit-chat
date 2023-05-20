@@ -2,7 +2,17 @@
 	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/stores';
-	import {selectedUser,selectedChat} from "../../lib/store.js"
+	import {
+		selectedUser,
+		selectedChat,
+		user,
+		searchResults,
+		owner,
+		messages,
+		showModal,
+		uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser
+	} from "../../lib/store.js"
+
 
 	let loading = false;
 
@@ -10,12 +20,27 @@
 		loading = true;
 		return async ({ result }) => {
 			if (result.type === 'redirect') {
-				selectedUser.set(null);
 				selectedChat.set(null);
+				selectedUser.set(null);
+				user.set(null);
+				searchResults.set([]);
+				owner.set(null);
+				messages.set([]);
+				uploadedImage.set([]);
+				selectedMessageIndex.set(-1);
+				timeStatus.set(null);
+				sessionUser.set(null)
 				await invalidate('supabase:auth');
 			} else {
-				selectedUser.set(null);
 				selectedChat.set(null);
+				selectedUser.set(null);
+				user.set(null);
+				searchResults.set([]);
+				owner.set(null);
+				messages.set([]);
+				uploadedImage.set([]);
+				selectedMessageIndex.set(-1);
+				timeStatus.set(null);
 				await applyAction(result);
 			}
 			loading = false;
@@ -24,7 +49,7 @@
 </script>
 
 <svelte:head>
-	<title>Email and Password Demo - Supabase Auth Helpers</title>
+	<title>Сhat</title>
 </svelte:head>
 
 <main class="container is-max-desktop">

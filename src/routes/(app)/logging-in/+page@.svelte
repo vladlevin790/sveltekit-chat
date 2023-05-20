@@ -6,7 +6,6 @@
 	$: {
 		const redirectTo = $page.url.searchParams.get('redirect');
 
-		// check if user has been set in session store then redirect
 		if (browser && $page.data.session) {
 			goto(redirectTo ?? '/chat');
 		}
@@ -19,7 +18,6 @@
 		<progress class="progress is-small is-info" max="100" />
 	</div>
 
-	<!-- Hero content: will be in the middle -->
 	<div class="hero-body">
 		<div class="container has-text-centered">
 			<em class="subtitle">

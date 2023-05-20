@@ -35,11 +35,11 @@
 			<form method="post" use:enhance={handleSubmit} style="display: flex; flex-direction: column;">
 				<div style="display: flex; flex-direction: row; margin-bottom: 10px;">
 						<label for="email" class="label">Имя пользователя</label>
-						<input id="email" name="email" value={form?.values?.email ?? ''} class="input" type="email" placeholder="Email" required style="flex-grow: 1; margin-left: 10px;"/>
+						<input id="email" name="email" value={form?.values?.email ?? ''} class="input" type="email" placeholder="Email" required style="flex-grow: 1; margin-left: 10px; max-width: 200px"/>
 				</div>
 				<div style="display: flex; flex-direction: row; margin-bottom: 10px;">
 						<label for="password" style="width: 150px; text-align: right;" class="label">Пароль</label>
-						<input id="password" name="password" class="input" type="password" placeholder="Пароль" required style="flex-grow: 1; margin-left: 10px;"/>
+						<input id="password" name="password" class="input" type="password" placeholder="Пароль" required style="flex-grow: 1; margin-left: 10px; max-width: 200px"/>
 				</div>
 				<button disabled={loading} class="sbt_button">Войти</button>
 			</form>
@@ -73,6 +73,7 @@
 	}
 
 	input{
+		width: 200px;
 		border: 2px solid #443d3d;
 		border-radius: 3px ;
 		padding: 5px;

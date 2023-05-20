@@ -9,7 +9,16 @@ import {
 	owner,
 	messages,
 	showModal,
-	uploadedImage, selectedMessageIndex, timeStatus, newMessageText, users, sessionUser
+	uploadedImage,
+	selectedMessageIndex,
+	timeStatus,
+	newMessageText,
+	users,
+	sessionUser,
+	userIcon,
+	newName,
+	newIcon,
+	showMenu
 } from "../../lib/store.js";
 import {writable} from "svelte/store";
 
@@ -25,9 +34,13 @@ export const actions: Actions = {
 		uploadedImage.set([]);
 		selectedMessageIndex.set(-1);
 		timeStatus.set(null);
+		userIcon.set('');
+		newName.set(' ');
+		newIcon.set(' ');
+		showMenu.set(false)
 		sessionUser.set(null);
 		showModal.set(false);
-		sessionUser.set(null);
+		selectedMessageIndex.set(-1)
 
 		throw redirect(303, '/');
 	}

@@ -202,17 +202,50 @@
 
 
   const updateUser = async () => {
+    const updatedData = {};
+
+    if ($newName && $newName != ' ') {
+      updatedData.username = $newName;
+    }
+
+    if ($newIcon && $newIcon != ' ') {
+      updatedData.user_icon = $newIcon;
+    }
+
+    if (Object.keys(updatedData).length === 0) {
+      console.log("No fields to update");
+      return;
+    }
+
+    const { error } = await supabase
+            .from("users")
+            .update(updatedData)
+            .eq("id", $sessionUser.id);
+
+    if (error) {
+      console.error("Error updating user data:", error);
+      return;
+    }
+
+    await ownerAvatar();
+  };
+
+
+
+  const clearIcon = async () => {
+    newIcon.set(''); // Очищаем значение новой ссылки на иконку
 
     const { error } = await supabase
             .from('users')
-            .update({ username: $newName, user_icon: $newIcon })
+            .update({ user_icon: null })
             .eq('id', $sessionUser.id);
 
     if (error) {
-      console.error('Error updating user data:', error);
+      console.error('Error clearing user icon:', error);
       return;
     }
-    await ownerAvatar()
+
+    ownerAvatar();
   };
 
   onMount(async () => {
@@ -334,11 +367,12 @@
       <form on:submit|preventDefault={updateUser}>
           <button class = "exit_btn" on:click={toggleClose}>X</button>
 
-          <p> имя пользователя : {user.username}</p>
+          <label> имя пользователя : <em>{user.username}</em></label>
 
           <input class = "new__name" type="text" id="newName" bind:value={$newName}>
 
-          <img class="modal_image" src={user.user_icon} alt="пиздец"/>
+          <img class="modal_image" src={user.user_icon} alt="ПУСТО"/>
+          <button class="btn_delete_icon" type="button" on:click={clearIcon}>Удалить аватарку</button>
 
           <label for="newIcon">Ссылка на картинку:</label>
           <input class = "new__icon" type="text" id="newIcon" bind:value={$newIcon}>
@@ -582,11 +616,37 @@
   .modal_image{
     max-width: 200px;
     min-height: 150px;
+    margin-left: 10px;
   }
 
   .exit_btn{
     background: none;
     margin-left: 200px;
+    transition: .3s all;
+  }
+
+  .btn_delete_icon{
+    border-radius: 6px;
+    color: white;
+    transition: .3s all;
+  }
+
+  .btn-toggle{
+    border-radius: 6px;
+    color: white;
+    transition: .3s all;
+  }
+
+  .exit_btn:hover{
+    color: #ff0a0a;
+  }
+
+  .btn_delete_icon:hover{
+    background-color: #a1a1a1;
+  }
+
+  .btn-toggle:hover{
+    background-color: #a1a1a1;
   }
 
   @keyframes shuffle {

@@ -1,6 +1,6 @@
 <script>
   import "../app.css"
-  import { onMount } from 'svelte';
+  import { onMount,afterUpdate } from 'svelte';
   import { writable } from 'svelte/store';
   import { createClient } from '@supabase/supabase-js';
   import { readable, derived } from 'svelte/store';
@@ -15,7 +15,7 @@
     users,
     selectedUser,
     selectedChat,
-    sessionUser
+    sessionUser,messagesContainer
   } from '../lib/store.js'
   import { onDestroy } from "svelte";
   import { invalidate } from "$app/navigation";
@@ -186,6 +186,17 @@
     }
   }
 
+
+  afterUpdate(() => {
+    scrollMessagesToBottom();
+  });
+
+  function scrollMessagesToBottom() {
+    if ($messagesContainer) {
+      $messagesContainer.scrollTop = $messagesContainer.scrollHeight;
+    }
+  }
+
   onMount(async () => {
 
     sessionUser.set(userus);
@@ -260,7 +271,7 @@
 
   {#if $selectedUser && $selectedChat}
     <section class="section__2" id="chatId">
-      <div class="messages__1" id="messages1" >
+      <div class="messages__1" id="messages1" bind:this={$messagesContainer} >
 
         {#each $messages as message, i}
             {#if message && message.chat === $selectedChat}
@@ -311,7 +322,7 @@
     main{
         border: 2px solid black;
         border-radius: 10px;
-      min-height: 570px;
+        min-height: 570px;
     }
 
     .chat__header{
@@ -382,6 +393,7 @@
         overflow-y: auto;
         backdrop-filter: blur(5px);
         box-shadow: 1px 1px 1px black;
+
     }
 
     .section__recomendation{
@@ -398,7 +410,7 @@
         margin-bottom: 15px;
         margin-right: 20px;
         margin-left: auto;
-        /*justify-self: end;*/
+
         background: #A636FE;
         white-space: pre-wrap;
     }
@@ -420,7 +432,9 @@
       margin-top: 20px;
       height: 100%;
       overflow-y: scroll;
+      scroll-behavior: smooth;
     }
+
 
     .userIcon{
       border: 2px solid black;

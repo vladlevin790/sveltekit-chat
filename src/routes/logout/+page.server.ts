@@ -18,7 +18,7 @@ import {
 	userIcon,
 	newName,
 	newIcon,
-	showMenu, showUser
+	showMenu, showUser, messagesContainer
 } from "../../lib/store.js";
 import {writable} from "svelte/store";
 
@@ -42,6 +42,7 @@ export const actions: Actions = {
 		showModal.set(false);
 		selectedMessageIndex.set(-1);
 		showUser.set(false);
+		messagesContainer.set([]);
 
 		throw redirect(303, '/');
 	}

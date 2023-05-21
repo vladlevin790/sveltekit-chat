@@ -10,7 +10,7 @@
 		owner,
 		messages,
 		showModal,
-		uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser,userIcon,showMenu,newIcon,newName,showUser
+		uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser,userIcon,showMenu,newIcon,newName,showUser,messagesContainer
 	} from "../../lib/store.js"
 
 
@@ -36,6 +36,7 @@
 				sessionUser.set(null);
 				showModal.set(false);
 				selectedMessageIndex.set(-1);
+				messagesContainer.set([]);
 				showUser.set(false);
 				await invalidate('supabase:auth');
 			} else {
@@ -56,6 +57,7 @@
 				showModal.set(false);
 				selectedMessageIndex.set(-1)
 				showUser.set(false);
+				messagesContainer.set([]);
 				await applyAction(result);
 			}
 			loading = false;
@@ -83,14 +85,11 @@
 
 <style>
 	.signOut{
-		position: relative;
-		top:-109px;
-		left: 13px;
 		width: max-content;
 		margin-left: 10px;
 		border: none;
 		border-radius: 5px;
-		background: #333333;
+		background: none;
 		color: #949292;
 	}
 </style>

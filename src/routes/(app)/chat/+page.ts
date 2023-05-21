@@ -15,6 +15,7 @@ import { redirect } from '@sveltejs/kit';
 // 	};
 // };
 
+
 export const load: PageLoad = async ({ parent }) => {
 	const { session, supabase } = await parent();
 	if (!session) {

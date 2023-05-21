@@ -18,7 +18,7 @@ import {
 	userIcon,
 	newName,
 	newIcon,
-	showMenu
+	showMenu, showUser
 } from "../../lib/store.js";
 import {writable} from "svelte/store";
 
@@ -40,7 +40,8 @@ export const actions: Actions = {
 		showMenu.set(false)
 		sessionUser.set(null);
 		showModal.set(false);
-		selectedMessageIndex.set(-1)
+		selectedMessageIndex.set(-1);
+		showUser.set(false);
 
 		throw redirect(303, '/');
 	}

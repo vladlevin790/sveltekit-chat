@@ -1,6 +1,6 @@
 <script lang="ts">
 	import "../../app.css";
-	import {goto} from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import type { ActionData } from './$types';
 	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
@@ -20,36 +20,41 @@
 		};
 	};
 </script>
+
 <main>
-<section class="columns mt-6 pt-6">
-	<div class="column is-half is-offset-one-quarter">
-		<div class="header_login">
-			<h1 class="header_text_1">Communique</h1>
-			<h1 class="header__text_2">APP</h1>
-			<p class="paragraph__header">вход</p>
-		</div>
-		{#if form?.error}
-			<div class="block notification is-danger">{form.error}</div>
-		{/if}
-		<div class="block__fields">
-			<form method="post" use:enhance={handleSubmit} style="display: flex; flex-direction: column;">
-				<div style="display: flex; flex-direction: row; margin-bottom: 10px;">
+	<section class="columns mt-6 pt-6">
+		<div class="column is-half is-offset-one-quarter">
+			<div class="header_login">
+				<h1 class="header_text_1">Communique</h1>
+				<h1 class="header__text_2">APP</h1>
+				<p class="paragraph__header">вход</p>
+			</div>
+			{#if form?.error}
+				<div class="block notification is-danger">{form.error}</div>
+			{/if}
+			<div class="block__fields">
+				<form method="post" use:enhance={handleSubmit} style="display: flex; flex-direction: column;">
+					<div class="input__container">
 						<label for="email" class="label">Имя пользователя</label>
-						<input id="email" name="email" value={form?.values?.email ?? ''} class="input" type="email" placeholder="Email" required style="flex-grow: 1; margin-left: 10px; max-width: 200px"/>
-				</div>
-				<div style="display: flex; flex-direction: row; margin-bottom: 10px;">
-						<label for="password" style="width: 150px; text-align: right;" class="label">Пароль</label>
-						<input id="password" name="password" class="input" type="password" placeholder="Пароль" required style="flex-grow: 1; margin-left: 10px; max-width: 200px"/>
-				</div>
-				<button disabled={loading} class="sbt_button">Войти</button>
-			</form>
+						<div class="input__wrapper">
+							<input id="email" name="email" value={form?.values?.email ?? ''} class="input" type="email" placeholder="Email" required />
+						</div>
+					</div>
+					<div class="input__container">
+						<label for="password" class="label">Пароль</label>
+						<div class="input__wrapper">
+							<input id="password" name="password" class="input" type="password" placeholder="Пароль" required />
+						</div>
+					</div>
+					<button disabled={loading} class="sbt_button">Войти</button>
+				</form>
+			</div>
+			<div class="block__register_fields">
+				<p>Нет учетной записи?</p>
+				<button on:click={() => goto('/signup')}>Зарегистрироваться</button>
+			</div>
 		</div>
-		<div class="block__register_fields">
-			<p>Нету учётной записи?</p>
-			<button on:click={() => goto('/signup')}>Зарегистрироваться</button>
-		</div>
-	</div>
-</section>
+	</section>
 </main>
 
 <style>
@@ -72,10 +77,10 @@
 		box-shadow: 4px 4px 8px #3771B6;
 	}
 
-	input{
-		width: 200px;
+	input {
+		width: 100%;
 		border: 2px solid #443d3d;
-		border-radius: 3px ;
+		border-radius: 3px;
 		padding: 5px;
 		background: #645656;
 		color: white;
@@ -90,13 +95,15 @@
 		text-align: center;
 	}
 
-	.header_text_1,.header__text_2,.paragraph__header {
+	.header_text_1,
+	.header__text_2,
+	.paragraph__header {
 		margin: 0;
 	}
 
-	.sbt_button{
+	.sbt_button {
 		width: max-content;
-		background: #5E856D ;
+		background: #5e856d;
 		color: white;
 		border: none;
 		padding: 8px 12px;
@@ -106,7 +113,7 @@
 		padding-top: 10px;
 	}
 
-	.block__fields{
+	.block__fields {
 		padding-top: 30px;
 		color: white;
 	}
@@ -130,4 +137,21 @@
 		cursor: pointer;
 	}
 
+	.input__container {
+		display: flex;
+		flex-direction: row;
+		margin-bottom: 10px;
+	}
+
+	.input__container .label {
+		width: 150px;
+		text-align: right;
+	}
+
+	.input__wrapper {
+		display: flex;
+		flex-grow: 1;
+		margin-left: 10px;
+		max-width: 200px;
+	}
 </style>

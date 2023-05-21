@@ -4,6 +4,7 @@
   import { writable } from 'svelte/store';
   import { createClient } from '@supabase/supabase-js';
   import { readable, derived } from 'svelte/store';
+  import { fade } from 'svelte/transition';
   import {
     messages,
     selectedMessageIndex,
@@ -95,6 +96,7 @@
     newMessageText.set('');
     uploadedImage.set(null);
     event.preventDefault();
+
   }
 
 
@@ -184,7 +186,6 @@
     }
   }
 
-
   onMount(async () => {
 
     sessionUser.set(userus);
@@ -243,7 +244,7 @@
   <section class="chat__header section__1">
     {#if $selectedUser}
       {#if $selectedUser.user_icon != null}
-        <img src={$selectedUser.user_icon} class="fa-regular fa-user user  userIcon" />
+        <img src={$selectedUser.user_icon} class="fa-regular fa-user user  userIcon" width="40" height="41" />
       {:else}
         <a href="#" class="fa-regular fa-user user"></a>
       {/if}
@@ -259,11 +260,11 @@
 
   {#if $selectedUser && $selectedChat}
     <section class="section__2" id="chatId">
-      <div class="messages__1" id="messages1">
+      <div class="messages__1" id="messages1" >
 
         {#each $messages as message, i}
             {#if message && message.chat === $selectedChat}
-              <div class={message.id_owner === $sessionUser.id ? 'message__1' : 'message__2'} on:contextmenu|preventDefault={(event) => selectMessage(event, i)}>
+              <div class={message.id_owner === $sessionUser.id ? 'message__1' : 'message__2'} on:contextmenu|preventDefault={(event) => selectMessage(event, i)} transition:fade="{{duration : 200}}" >
                 {#if message && message.message}
                   <p class="paragraph_1">{message.message}</p>
                 {/if}
@@ -287,6 +288,7 @@
             </div>
           {/if}
         {/each}
+
       </div>
     </section>
     <section class="section__3">

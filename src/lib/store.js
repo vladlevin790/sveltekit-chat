@@ -16,4 +16,5 @@ export const messages = writable([]),
     userIcon = writable(''),
     newName = writable(' '),
     newIcon = writable( ' '),
-    showMenu = writable(false);
+    showMenu = writable(false),
+    showUser = writable(false);

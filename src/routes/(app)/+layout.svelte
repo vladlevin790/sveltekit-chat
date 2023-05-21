@@ -10,7 +10,7 @@
 		owner,
 		messages,
 		showModal,
-		uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser,userIcon,showMenu,newIcon,newName
+		uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser,userIcon,showMenu,newIcon,newName,showUser
 	} from "../../lib/store.js"
 
 
@@ -35,7 +35,8 @@
 				showMenu.set(false)
 				sessionUser.set(null);
 				showModal.set(false);
-				selectedMessageIndex.set(-1)
+				selectedMessageIndex.set(-1);
+				showUser.set(false);
 				await invalidate('supabase:auth');
 			} else {
 				selectedChat.set(null);
@@ -54,6 +55,7 @@
 				sessionUser.set(null);
 				showModal.set(false);
 				selectedMessageIndex.set(-1)
+				showUser.set(false);
 				await applyAction(result);
 			}
 			loading = false;

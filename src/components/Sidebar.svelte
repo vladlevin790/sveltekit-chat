@@ -3,7 +3,8 @@
   import { onMount , onDestroy} from 'svelte';
   import { createClient } from "@supabase/supabase-js";
   import { writable } from 'svelte/store';
-  import {users, searchResults, selectedUser, selectedChat, owner, newName, newIcon,userIcon, sessionUser,showMenu} from "$lib/store.js";
+  import {users, searchResults, selectedUser, selectedChat, owner, newName, newIcon,userIcon, sessionUser,showMenu,showUser} from "$lib/store.js";
+  import { fade } from 'svelte/transition';
 
   const supabaseUrl = 'https://vayakipdpailwnuozwvc.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWFraXBkcGFpbHdudW96d3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA1Mzk1MzEsImV4cCI6MTk5NjExNTUzMX0.Ax_xuXTtaKDFNRO2TPMMb1aLJMU-f42ufwbeqGP27rA';
@@ -59,6 +60,14 @@
 
   function toggleClose(){
     showMenu.update(value => !value);
+  }
+
+  function toggleMenuUser(){
+    showUser.update(value => !value)
+  }
+
+  function toggleUserClose(){
+    showUser.update(value => !value)
   }
 
   async function startChat(user) {
@@ -201,6 +210,7 @@
   }
 
 
+
   const updateUser = async () => {
     const updatedData = {};
 
@@ -233,7 +243,7 @@
 
 
   const clearIcon = async () => {
-    newIcon.set(''); // Очищаем значение новой ссылки на иконку
+    newIcon.set('');
 
     const { error } = await supabase
             .from('users')
@@ -247,6 +257,55 @@
 
     ownerAvatar();
   };
+
+  const selectUser = (event, user) => {
+    if ($selectedUser.id === user.id) {
+      showUser.set(!showUser);
+    } else {
+      showUser.set(true);
+    }
+  };
+
+
+
+  const deleteChat = async () => {
+    const chatId = $selectedChat;
+    if (!chatId) {
+      console.log("No chat selected");
+      return;
+    }else if(chatId){
+      const {error: chatMessageError} = await supabase.from("message").delete().eq("chat",chatId)
+      if(chatMessageError){
+        console.log("errorMessage")
+      }else{
+        const { error: deleteUserChatError } = await supabase
+                .from("user_chat")
+                .delete()
+                .eq("id_chat", chatId);
+
+        if (deleteUserChatError) {
+          console.error("Error deleting user chat:", deleteUserChatError);
+          return;
+        }
+        const { error: deleteChatError } = await supabase.from("chat").delete().eq("id", chatId);
+
+        if (deleteChatError) {
+          console.error("Error deleting chat:", deleteChatError);
+          return;
+        }
+      }
+    }
+    selectedChat.set(null);
+    selectedUser.set(null);
+    showUser.set(false);
+    await loadUsers();
+  };
+
+  const closeSelectUser = async () =>{
+    showUser.set(false);
+  }
+
+
 
   onMount(async () => {
     const searchButton = document.getElementById("search-button");
@@ -305,7 +364,7 @@
       {#each $searchResults as user}
         <div class="search-result">
           {#if user.user_icon != null}
-            <img src={user.user_icon} class="fa-regular fa-user user" />
+            <img src={user.user_icon} class="fa-regular fa-user user" on:click={async () => {await startChat(user);}} width="40" height="41"/>
           {:else}
             <a href="#" class="fa-regular fa-user user"></a>
           {/if}
@@ -322,11 +381,11 @@
   </div>
 
   {#if $users.length > 0}
-    <div id="user-sections">
-      {#each $users as user}
-        <section class="section__1" id={`user-section-${user.id}`} on:click={async () => {await startChat(user);}}>
+    <div class="user_section" id="user-sections">
+      {#each $users as user , i}
+        <section class="section__1" id={`user-section-${user.id}`} on:click={async () => {await startChat(user);}} on:contextmenu={e => selectUser(e, selectedUser)}>
             {#if user.user_icon != null}
-              <img src={user.user_icon} class="fa-regular fa-user user" />
+              <img src={user.user_icon} class="fa-regular fa-user user" width="40" height="41"/>
             {:else}
               <a href="#" class="fa-regular fa-user user"></a>
             {/if}
@@ -335,6 +394,18 @@
             <p class="User__Status_1" id={`UserStatus-${user.id}`}> last seen: {user.last_login_at.toString()}</p>
           </div>
         </section>
+        {#if $showUser && $selectedChat && $selectedUser.id === user.id}
+          <div>
+            <div class="delete_chat" transition:fade >
+              <h3 class="delete_chat_header">Удаление чата</h3>
+              <p class="delete_chat_paragraph">Вы уверены, что хотите удалить чат с пользователем <b>{$selectedUser.username}</b>?</p>
+              <div class="delete_chat_exit">
+                <button class="delete_chat_btn" on:click={deleteChat}>Удалить</button>
+                <button class="delete_chat_exit_btn" on:click={closeSelectUser}>Отменить</button>
+              </div>
+            </div>
+          </div>
+        {/if}
       {/each}
 
     </div>
@@ -346,7 +417,7 @@
     <div class="footer__content">
       {#each $userIcon as icon}
         {#if icon.user_icon != null}
-            <img src={icon.user_icon} class="fa-regular fa-user user" />
+            <img src={icon.user_icon} class="fa-regular fa-user user" width="40" height="41" />
           {:else}
             <a href="#" class="fa-regular fa-user user"></a>
         {/if}
@@ -363,7 +434,7 @@
 
   {#if $showMenu}
     {#each $userIcon as user}
-    <div class="menu">
+    <div class="menu" transition:fade>
       <form on:submit|preventDefault={updateUser}>
           <button class = "exit_btn" on:click={toggleClose}>X</button>
 
@@ -371,7 +442,7 @@
 
           <input class = "new__name" type="text" id="newName" bind:value={$newName}>
 
-          <img class="modal_image" src={user.user_icon} alt="ПУСТО"/>
+          <img class="modal_image" src={user.user_icon} alt="Аватар не найден"/>
           <button class="btn_delete_icon" type="button" on:click={clearIcon}>Удалить аватарку</button>
 
           <label for="newIcon">Ссылка на картинку:</label>
@@ -491,15 +562,59 @@
   .footer{
     margin-top: auto;
   }
+
+
   .footer__content {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
+
+
   .center {
     color: white;
     text-align: center;
   }
+
+  .user_section{
+    overflow-y: scroll;
+  }
+
+  .delete_chat{
+    background: #645656;
+    border: 2px solid black;
+    border-radius: 10px;
+    max-width: 150px;
+    color: white;
+    padding: 10px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .delete_chat_exit{
+    display: flex;
+  }
+
+  .delete_chat_btn{
+    color: #ffffff;
+    cursor: pointer;
+    transition: .3s all;
+  }
+
+  .delete_chat_btn:hover{
+    color: rgba(245, 245, 245, 0.75);
+  }
+
+  .delete_chat_exit_btn{
+    color: #ffffff;
+    cursor: pointer;
+    transition: .3s all;
+  }
+
+  .delete_chat_exit_btn:hover{
+    color: rgba(245, 245, 245, 0.75);
+  }
+
   .menu {
     display: flex;
     justify-content: center;

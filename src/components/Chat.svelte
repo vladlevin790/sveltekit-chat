@@ -309,10 +309,9 @@
 
 <style>
     main{
-        margin-top: 10px;
         border: 2px solid black;
         border-radius: 10px;
-        max-height: 570px;
+      min-height: 570px;
     }
 
     .chat__header{

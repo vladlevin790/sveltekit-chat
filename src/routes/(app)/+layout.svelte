@@ -68,6 +68,7 @@
 </svelte:head>
 
 <main class="container is-max-desktop">
+	<slot />
 	<div class="navbar-menu my-4">
 		<div class="navbar-end">
 			{#if $page.data.session}
@@ -78,11 +79,13 @@
 		</div>
 	</div>
 
-	<slot />
 </main>
 
 <style>
 	.signOut{
+		position: relative;
+		top:-109px;
+		left: 13px;
 		width: max-content;
 		margin-left: 10px;
 		border: none;

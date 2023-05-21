@@ -432,6 +432,7 @@
   </section>
 
 
+
   {#if $showMenu}
     {#each $userIcon as user}
     <div class="menu" transition:fade>
@@ -467,7 +468,7 @@
   main{
     border: 2px solid black;
     border-radius: 10px;
-    height: 550px;
+    min-height: 550px;
     display: flex;
     flex-direction: column;
   }

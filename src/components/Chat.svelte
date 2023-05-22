@@ -96,7 +96,7 @@
     newMessageText.set('');
     uploadedImage.set(null);
     event.preventDefault();
-
+    loadChat();
   }
 
 
@@ -285,7 +285,7 @@
 
         {#each $messages as message, i}
             {#if message && message.chat === $selectedChat}
-              <div class={message.id_owner === $sessionUser.id ? 'message__1' : 'message__2'} on:contextmenu|preventDefault={(event) => selectMessage(event, i)} transition:fade="{{duration : 200}}" >
+              <div class={message.id_owner === $sessionUser.id ? 'message__1' : 'message__2'} on:contextmenu|preventDefault={(event) => selectMessage(event, i)} transition:fade="{{duration : 200}}"  class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
                 {#if message && message.message}
                   <p class="paragraph_1">{message.message}</p>
                 {/if}
@@ -295,8 +295,8 @@
 
 
           {#if $showModal && $selectedMessageIndex === i}
-            <div class="modal" >
-              <div class="modal-content">
+            <div class="modal" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+              <div class="modal-content" >
                 <h2>Изменить сообщение</h2>
                 <form on:submit|preventDefault={editMessage}>
                   <div class="buttons">
@@ -356,7 +356,7 @@
         margin-left: auto;
         margin-right: auto;
         background: #645656;
-      transition: .3s all;
+        transition: .3s all;
     }
 
     .section__1.light{
@@ -451,6 +451,15 @@
         margin-left: auto;
         background: #A636FE;
         white-space: pre-wrap;
+        margin-top: 15px;
+    }
+
+    .message__1.light{
+      border: white;
+    }
+
+    .message__2.light{
+      border: white
     }
 
     .message__2{
@@ -500,9 +509,12 @@
         margin-bottom: 10px;
         margin-right: 10px;
         margin-left: auto;
-        /*justify-self: end;*/
         color: white;
         transition: .3s all;
+    }
+
+    .modal.light{
+      border: white;
     }
 
     .paragraph_1{
@@ -510,10 +522,10 @@
     }
 
     .section__3{
-        display: grid;
+        display: flex;
         padding: 10px;
         border: 2px solid black;
-        width:max-content;
+        max-width: 300px;
         border-radius: 10px;
         margin-left: auto;
         margin-right: auto;
@@ -527,6 +539,7 @@
         background: #645656;
         color: white;
         transition: .3s all;
+        min-width: 265px;
     }
 
     button{
@@ -571,6 +584,7 @@
     .section__3.light{
       background: #646256;
       border: white;
+      margin-top: 10px;
     }
 
     .form_message input.light{

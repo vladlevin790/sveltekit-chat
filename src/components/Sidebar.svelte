@@ -3,8 +3,9 @@
   import { onMount , onDestroy} from 'svelte';
   import { createClient } from "@supabase/supabase-js";
   import { writable } from 'svelte/store';
-  import {users, searchResults, selectedUser, selectedChat, owner, newName, newIcon,userIcon, sessionUser,showMenu,showUser} from "$lib/store.js";
+  import {users, searchResults, selectedUser, selectedChat, owner, newName, newIcon,userIcon, sessionUser,showMenu,showUser,theme,selectedTheme} from "$lib/store.js";
   import { fade } from 'svelte/transition';
+
 
   const supabaseUrl = 'https://vayakipdpailwnuozwvc.supabase.co';
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheWFraXBkcGFpbHdudW96d3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODA1Mzk1MzEsImV4cCI6MTk5NjExNTUzMX0.Ax_xuXTtaKDFNRO2TPMMb1aLJMU-f42ufwbeqGP27rA';
@@ -13,7 +14,6 @@
   export let userus;
 
   let query = '';
-
   let searchInput;
 
   async function checkUserExists()  {
@@ -305,11 +305,15 @@
     showUser.set(false);
   }
 
-
+  function toggleTheme() {
+    theme.set($selectedTheme);
+  }
 
   onMount(async () => {
     const searchButton = document.getElementById("search-button");
     searchInput = document.getElementById("search-input");
+
+    selectedTheme.set($theme);
 
     const handleSearchButtonClick = async () => {
       query = searchInput.value.trim();
@@ -343,26 +347,23 @@
     await ownerAvatar()
 
     await loadUsers();
-    console.log(userus);
 
   });
-
-  console.log(userus);
 
 </script>
 
 
-<main class="main_sidebar">
+<main class="main_sidebar" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
   <section class="block__head">
-    <div class="header__1">
-      <button type="submit" class="fa-solid fa-magnifying-glass" id="search-button"></button>
-      <input type="text" name="search" class="input__search" id="search-input" placeholder="Поиск" bind:value={query}>
+    <div class="header__1" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+      <button type="submit" class="fa-solid fa-magnifying-glass" id="search-button" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}></button>
+      <input type="text" name="search" class="input__search" id="search-input" placeholder="Поиск" bind:value={query} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
     </div>
   </section>
-  <div id="search-results">
+  <div id="search-results" >
     {#if $searchResults.length > 0}
       {#each $searchResults as user}
-        <div class="search-result">
+        <div class="search-result" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
           {#if user.user_icon != null}
             <img src={user.user_icon} class="fa-regular fa-user user" on:click={async () => {await startChat(user);}} width="40" height="41"/>
           {:else}
@@ -381,27 +382,27 @@
   </div>
 
   {#if $users.length > 0}
-    <div class="user_section" id="user-sections">
+    <div class="user_section" id="user-sections" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
       {#each $users as user , i}
-        <section class="section__1" id={`user-section-${user.id}`} on:click={async () => {await startChat(user);}} on:contextmenu={e => selectUser(e, selectedUser)}>
+        <section class="section__1" id={`user-section-${user.id}`} on:click={async () => {await startChat(user);}} on:contextmenu={e => selectUser(e, selectedUser)} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
             {#if user.user_icon != null}
               <img src={user.user_icon} class="fa-regular fa-user user" width="40" height="41"/>
             {:else}
               <a href="#" class="fa-regular fa-user user"></a>
             {/if}
-          <div class="block__1">
-            <p class="User__Name_1" id={`UserName-${user.id}`}>{user.username}</p>
-            <p class="User__Status_1" id={`UserStatus-${user.id}`}> last seen: {user.last_login_at.toString()}</p>
+          <div class="block__1" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+            <p class="User__Name_1" id={`UserName-${user.id}`} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>{user.username}</p>
+            <p class="User__Status_1" id={`UserStatus-${user.id}`} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}> last seen: {user.last_login_at.toString()}</p>
           </div>
         </section>
         {#if $showUser && $selectedChat && $selectedUser.id === user.id}
           <div>
-            <div class="delete_chat" transition:fade >
-              <h3 class="delete_chat_header">Удаление чата</h3>
-              <p class="delete_chat_paragraph">Вы уверены, что хотите удалить чат с пользователем <b>{$selectedUser.username}</b>?</p>
-              <div class="delete_chat_exit">
-                <button class="delete_chat_btn" on:click={deleteChat}>Удалить</button>
-                <button class="delete_chat_exit_btn" on:click={closeSelectUser}>Отменить</button>
+            <div class="delete_chat" transition:fade class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+              <h3 class="delete_chat_header" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>Удаление чата</h3>
+              <p class="delete_chat_paragraph" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>Вы уверены, что хотите удалить чат с пользователем <b>{$selectedUser.username}</b>?</p>
+              <div class="delete_chat_exit" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+                <button class="delete_chat_btn" on:click={deleteChat} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>Удалить</button>
+                <button class="delete_chat_exit_btn" on:click={closeSelectUser} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>Отменить</button>
               </div>
             </div>
           </div>
@@ -413,8 +414,8 @@
     <div></div>
   {/if}
 
-  <section class="footer">
-    <div class="footer__content">
+  <section class="footer" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+    <div class="footer__content" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
       {#each $userIcon as icon}
         {#if icon.user_icon != null}
             <img src={icon.user_icon} class="fa-regular fa-user user" width="40" height="41" />
@@ -422,40 +423,45 @@
             <a href="#" class="fa-regular fa-user user"></a>
         {/if}
       {/each}
-      <h2 class="header__2 center">
+      <h2 class="header__2 center" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
         <span >Ч</span>
         <span >А</span>
         <span >Т</span>
       </h2>
-      <button class="fa-solid fa-gear  rotate" style="color: #ffffff; background: none" on:click={toggleMenu}></button>
+      <button class="fa-solid fa-gear  rotate  gear_btn" on:click={toggleMenu} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}></button>
     </div>
   </section>
 
 
 
   {#if $showMenu}
+
     {#each $userIcon as user}
-    <div class="menu" transition:fade>
-      <form on:submit|preventDefault={updateUser}>
-          <button class = "exit_btn" on:click={toggleClose}>X</button>
 
-          <label> имя пользователя : <em>{user.username}</em></label>
+    <div class="menu" transition:fade class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
 
-          <input class = "new__name" type="text" id="newName" bind:value={$newName}>
+      <form on:submit|preventDefault={updateUser} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+
+          <button class = "exit_btn" on:click={toggleClose} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>X</button>
+
+          <label class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}> имя пользователя : <em>{user.username}</em></label>
+
+          <input class = "new__name" type="text" id="newName" bind:value={$newName} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
 
           <img class="modal_image" src={user.user_icon} alt="Аватар не найден"/>
-          <button class="btn_delete_icon" type="button" on:click={clearIcon}>Удалить аватарку</button>
 
-          <label for="newIcon">Ссылка на картинку:</label>
-          <input class = "new__icon" type="text" id="newIcon" bind:value={$newIcon}>
+          <button class="btn_delete_icon" type="button" on:click={clearIcon} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>Удалить аватарку</button>
+
+          <label for="newIcon" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>Ссылка на картинку:</label>
+
+          <input class = "new__icon" type="text" id="newIcon" bind:value={$newIcon} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}  placeholder="Вставьте ссылку на изображение">
 
         <label>Тема:</label>
-        <select id="theme">
+        <select id="theme" bind:value={$selectedTheme} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
           <option value="dark">Темная</option>
           <option value="light">Светлая</option>
         </select>
-        <button class="btn-toggle">поменять</button>
-        <button class = "btn_save_form" type="submit" on:click={updateUser}  on:click={toggleClose}>Сохранить</button>
+        <button class = "btn_save_form" type="submit" on:click={updateUser}  on:click={toggleClose} class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>Сохранить</button>
       </form>
     </div>
     {/each}
@@ -463,18 +469,24 @@
 
 </main>
 
-
 <style>
+  main.light {
+    border: white;
+    background-color: #ffffff;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.35);
+  }
+
   main{
     border: 2px solid black;
     border-radius: 10px;
     min-height: 550px;
     display: flex;
     flex-direction: column;
+    transition: .3s all;
   }
 
   .header__1{
-    border: 2px solid;
+    border: 2px solid black;
     border-radius: 10px;
     padding: 10px;
     width: max-content;
@@ -482,11 +494,26 @@
     margin-left: auto;
     margin-right: auto;
     background: #645656;
+    transition: .3s all;
   }
 
+  .header__1.light{
+    background: #646256;
+    border: white;
+  }
+
+  input.light{
+    color: white;
+    background: #646256;
+  }
+
+  button.light{
+    background: #646256;
+  }
   main{
     padding: 10px;
     padding-top: 10px;
+    transition: .3s all;
   }
   .section__1{
     border: 2px solid black;
@@ -504,20 +531,34 @@
     background: #645656;
     transition: .3s all;
   }
+
+  .section__1.light{
+    background: #646256;
+    color: white;
+    border: white;
+  }
+
+  .section__1.light:hover{
+    background: rgba(100, 98, 86, 0.93);
+  }
+
   section a {
     margin-right: 20px;
     border: 2px solid black;
     border-radius: 10px;
     padding: 10px;
     font-size: 20px;
+    transition: .3s all;
   }
 
   section img {
     margin-right: 20px;
+    transition: .3s all;
   }
 
   .block__1{
     line-height: 0;
+    transition: .3s all;
   }
 
   button{
@@ -525,6 +566,7 @@
     background-color: #645656 ;
     font-size: 15px;
     color:#C8C7C7;
+    transition: .3s all;
   }
 
   input{
@@ -532,11 +574,13 @@
     border: none;
     background: #645656;
     color: white;
+    transition: .3s all;
   }
 
   .user{
     border-radius: 30px;
     text-align: center;
+    transition: .3s all;
   }
 
   a:active {
@@ -562,23 +606,47 @@
 
   .footer{
     margin-top: auto;
+    transition: .3s all;
   }
 
+  .footer.light{
+    text-shadow: 1px 1px 1px #000;
+  }
+
+
+  .header__2.light{
+    text-shadow: 0px 0px 0px #000;
+    color: rgba(100, 98, 86, 0.93);
+
+  }
+
+  .gear_btn.light{
+    color: rgba(100, 98, 86, 0.93);
+    background: none;
+  }
+
+  .gear_btn{
+    color: #ffffff;
+    background: none;
+  }
 
   .footer__content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: .3s all;
   }
 
 
   .center {
     color: white;
     text-align: center;
+    transition: .3s all;
   }
 
   .user_section{
     overflow-y: scroll;
+    transition: .3s all;
   }
 
   .delete_chat{
@@ -590,10 +658,16 @@
     padding: 10px;
     margin-left: auto;
     margin-right: auto;
+    transition: .3s all;
+  }
+
+  .delete_chat.light{
+    background: #646256;
   }
 
   .delete_chat_exit{
     display: flex;
+    transition: .3s all;
   }
 
   .delete_chat_btn{
@@ -628,6 +702,7 @@
     top: 0;
     left: 0;
     color: white;
+    transition: .3s all;
   }
 
   .menu-content {
@@ -636,17 +711,20 @@
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    transition: .3s all;
   }
 
   .menu form {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    transition: .3s all;
   }
 
   .menu label {
     font-size: 16px;
     font-weight: bold;
+    transition: .3s all;
   }
 
   .menu input[type="text"],
@@ -657,9 +735,10 @@
     border: none;
     border-radius: 5px;
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+    transition: .3s all;
   }
 
-  .menu button[type="submit"] {
+  form button {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -667,10 +746,12 @@
     color: #ffffff;
     font-size: 16px;
     cursor: pointer;
+    transition: .3s all;
   }
 
-  .menu button[type="submit"]:hover {
+  form button:hover {
     background-color: #a1a1a1;
+    transition: .3s all;
   }
 
   .search-result{
@@ -687,6 +768,7 @@
     margin-left: auto;
     margin-right: auto;
     background: #645656;
+    transition: .3s all;
   }
 
   a {
@@ -695,6 +777,7 @@
     border-radius: 10px;
     padding: 10px;
     font-size: 20px;
+    transition: .3s all;
   }
 
   img{
@@ -722,6 +805,7 @@
     text-transform: uppercase;
     color: white;
     position: relative;
+    transition: .3s all;
   }
 
   .header__2:hover span {
@@ -747,12 +831,6 @@
     transition: .3s all;
   }
 
-  .btn-toggle{
-    border-radius: 6px;
-    color: white;
-    transition: .3s all;
-  }
-
   .exit_btn:hover{
     color: #ff0a0a;
   }
@@ -761,8 +839,19 @@
     background-color: #a1a1a1;
   }
 
-  .btn-toggle:hover{
-    background-color: #a1a1a1;
+
+  .exit_btn.light{
+    background: none;
+    font-size: larger;
+  }
+
+  form button.light{
+    background: #646256;
+    border: white;
+  }
+
+  form button.light:hover{
+    background: #a2a097;
   }
 
   @keyframes shuffle {

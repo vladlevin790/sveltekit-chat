@@ -3,7 +3,7 @@
     import Sidebar from '../../../components/Sidebar.svelte'
     import type { PageData } from './$types';
     import { onMount } from "svelte";
-    import { sessionUser } from "../../../lib/store.js"
+    import { sessionUser , selectedTheme } from "../../../lib/store.js"
 
     export let data: PageData;
     $: ({ userChats, userus } = data);
@@ -12,6 +12,7 @@
         sessionUser.set(userus);
     })
 </script>
+
 
 <main class="main-container">
     <div class="center-container">

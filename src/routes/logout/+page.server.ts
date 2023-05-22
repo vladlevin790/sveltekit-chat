@@ -9,17 +9,8 @@ import {
 	owner,
 	messages,
 	showModal,
-	uploadedImage,
-	selectedMessageIndex,
-	timeStatus,
-	newMessageText,
-	users,
-	sessionUser,
-	userIcon,
-	newName,
-	newIcon,
-	showMenu, showUser, messagesContainer
-} from "../../lib/store.js";
+	uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser,userIcon,showMenu,newIcon,newName,showUser,messagesContainer,selectedTheme,theme
+} from "../../lib/store.js"
 import {writable} from "svelte/store";
 
 export const actions: Actions = {
@@ -38,13 +29,13 @@ export const actions: Actions = {
 		newName.set(' ');
 		newIcon.set(' ');
 		showMenu.set(false)
-		sessionUser.set(null);
 		showModal.set(false);
 		selectedMessageIndex.set(-1);
-		showUser.set(false);
 		messagesContainer.set([]);
-
+		showUser.set(false);
+		theme.set('');
+		selectedTheme.set('');
+		sessionUser.set(null);
 		throw redirect(303, '/');
 	}
 };
-

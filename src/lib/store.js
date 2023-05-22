@@ -18,4 +18,6 @@ export const messages = writable([]),
     newIcon = writable( ' '),
     showMenu = writable(false),
     showUser = writable(false),
-    messagesContainer = writable([]);
+    messagesContainer = writable([]),
+    theme = writable(''),
+    selectedTheme = writable('');

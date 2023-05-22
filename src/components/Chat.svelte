@@ -1,6 +1,6 @@
 <script>
   import "../app.css"
-  import { onMount,afterUpdate } from 'svelte';
+  import { onMount,afterUpdate,beforeUpdate } from 'svelte';
   import { writable } from 'svelte/store';
   import { createClient } from '@supabase/supabase-js';
   import { readable, derived } from 'svelte/store';
@@ -15,7 +15,7 @@
     users,
     selectedUser,
     selectedChat,
-    sessionUser,messagesContainer
+    sessionUser,messagesContainer,selectedTheme
   } from '../lib/store.js'
   import { onDestroy } from "svelte";
   import { invalidate } from "$app/navigation";
@@ -186,9 +186,18 @@
     }
   }
 
+  let shouldScrollToBottom = true;
+
+  beforeUpdate(() => {
+    if ($messagesContainer) {
+      shouldScrollToBottom = $messagesContainer.scrollTop === $messagesContainer.scrollHeight - $messagesContainer.clientHeight;
+    }
+  });
 
   afterUpdate(() => {
-    scrollMessagesToBottom();
+    if (shouldScrollToBottom) {
+      scrollMessagesToBottom();
+    }
   });
 
   function scrollMessagesToBottom() {
@@ -196,6 +205,7 @@
       $messagesContainer.scrollTop = $messagesContainer.scrollHeight;
     }
   }
+
 
   onMount(async () => {
 
@@ -251,26 +261,26 @@
 
 </script>
 
-<main class="main_chat">
-  <section class="chat__header section__1">
+<main class="main_chat"  class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+  <section class="chat__header section__1" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
     {#if $selectedUser}
       {#if $selectedUser.user_icon != null}
         <img src={$selectedUser.user_icon} class="fa-regular fa-user user  userIcon" width="40" height="41" />
       {:else}
         <a href="#" class="fa-regular fa-user user"></a>
       {/if}
-      <div class="block__1">
+      <div class="block__1" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
         <p class="User__Name_1" id="UserName1">{$selectedUser.username}</p>
         <p class="User__Status_1" id="UserStatus1">last seen: {$selectedUser.last_login_at}</p>
       </div>
     {:else}
-      <p class="welcome-message">Привет!)</p>
+      <p class="welcome-message" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>Привет!)</p>
     {/if}
   </section>
 
 
   {#if $selectedUser && $selectedChat}
-    <section class="section__2" id="chatId">
+    <section class="section__2" id="chatId" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
       <div class="messages__1" id="messages1" bind:this={$messagesContainer} >
 
         {#each $messages as message, i}
@@ -285,7 +295,7 @@
 
 
           {#if $showModal && $selectedMessageIndex === i}
-            <div class="modal">
+            <div class="modal" >
               <div class="modal-content">
                 <h2>Изменить сообщение</h2>
                 <form on:submit|preventDefault={editMessage}>
@@ -302,18 +312,18 @@
 
       </div>
     </section>
-    <section class="section__3">
+    <section class="section__3" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
       <div>
-        <form enctype="multipart/form-data" on:submit="{addMessage}">
-          <input class="input_message" id="message" type="text" placeholder="Введите сообщение" bind:value="{$newMessageText}">
-          <button id="button_send" type="submit" class="fa-sharp fa-regular fa-paper-plane"></button>
+        <form enctype="multipart/form-data"  on:submit="{addMessage}" class="form_message" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+          <input class="input_message" id="message" type="text" placeholder="Введите сообщение" bind:value="{$newMessageText}" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+          <button id="button_send" type="submit" class="fa-sharp fa-regular fa-paper-plane" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}></button>
         </form>
       </div>
     </section>
   {:else}
-    <section class="section__recomendation">
-      <p class="recomendation_message">Активных чатов пока нет, перейдите на окно слева и начните новый чат.</p>
-      <p class="arrow fa-sharp fa-solid fa-arrow-left"></p>
+    <section class="section__recomendation" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>
+      <p class="recomendation_message" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}>Активных чатов пока нет, перейдите на окно слева и начните новый чат.</p>
+      <p class="arrow fa-sharp fa-solid fa-arrow-left" class:dark={$selectedTheme === 'dark'} class:light={$selectedTheme === 'light'}></p>
     </section>
   {/if}
 </main>
@@ -323,6 +333,13 @@
         border: 2px solid black;
         border-radius: 10px;
         min-height: 570px;
+        transition: .3s all;
+    }
+
+    main.light {
+      border: white;
+      background-color: #ffffff;
+      box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.35);
     }
 
     .chat__header{
@@ -339,6 +356,12 @@
         margin-left: auto;
         margin-right: auto;
         background: #645656;
+      transition: .3s all;
+    }
+
+    .section__1.light{
+      background: #646256;
+      border: white;
     }
 
     a:active {
@@ -369,6 +392,11 @@
       overflow-y: auto;
       backdrop-filter: blur(5px);
       box-shadow: 1px 1px 1px black;
+      transition: .3s all;
+    }
+
+    .recomendation_message.light{
+      border: white;
     }
 
     section a {
@@ -377,6 +405,11 @@
         border-radius: 30px;
         padding: 10px;
         font-size: 20px;
+        transition: .3s all;
+    }
+
+    section a .light{
+      border: white;
     }
 
     .block__1{
@@ -393,13 +426,19 @@
         overflow-y: auto;
         backdrop-filter: blur(5px);
         box-shadow: 1px 1px 1px black;
+        transition: .3s all;
+    }
 
+    .section__2.light{
+      background-image: url("../routes/(app)/images/whitetheme.jpg");
+      border: white;
     }
 
     .section__recomendation{
       display: flex;
       flex-direction: column;
       height: 440px;
+      transition: .3s all;
     }
 
     .message__1{
@@ -410,7 +449,6 @@
         margin-bottom: 15px;
         margin-right: 20px;
         margin-left: auto;
-
         background: #A636FE;
         white-space: pre-wrap;
     }
@@ -423,7 +461,6 @@
       margin-bottom: 15px;
       margin-right: auto;
       margin-left: 20px;
-      /*justify-self: end;*/
       background: #0f6fff;
       white-space: pre-wrap;
     }
@@ -465,6 +502,7 @@
         margin-left: auto;
         /*justify-self: end;*/
         color: white;
+        transition: .3s all;
     }
 
     .paragraph_1{
@@ -481,12 +519,14 @@
         margin-right: auto;
         margin-top: 7px;
         background: #645656;
+        transition: .3s all;
     }
 
     input{
         border: none;
         background: #645656;
         color: white;
+        transition: .3s all;
     }
 
     button{
@@ -494,6 +534,8 @@
         background-color: #645656 ;
         font-size: 15px;
         color:#C8C7C7;
+        transition: .3s all;
+        cursor: pointer;
     }
 
     button:active {
@@ -503,6 +545,7 @@
     .welcome-message{
       margin-left: auto;
       margin-right: auto;
+      transition: .3s all;
     }
 
     .arrow {
@@ -513,6 +556,31 @@
       font-size: 50px;
       transform: translateY(-50%);
       animation: blink 1s infinite alternate;
+    }
+
+    .recomendation_message.light{
+      background: #646256;
+      border: white;
+    }
+
+    .form_message.light{
+      background: #646256;
+      border: white;
+    }
+
+    .section__3.light{
+      background: #646256;
+      border: white;
+    }
+
+    .form_message input.light{
+      background: #646256;
+      border: white;
+    }
+
+    .form_message button.light{
+      background: #646256;
+      border: white;
     }
 
     @keyframes blink {

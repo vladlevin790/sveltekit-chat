@@ -10,7 +10,7 @@
 		owner,
 		messages,
 		showModal,
-		uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser,userIcon,showMenu,newIcon,newName,showUser,messagesContainer
+		uploadedImage, selectedMessageIndex, timeStatus,newMessageText,users,sessionUser,userIcon,showMenu,newIcon,newName,showUser,messagesContainer,selectedTheme,theme
 	} from "../../lib/store.js"
 
 
@@ -33,11 +33,13 @@
 				newName.set(' ');
 				newIcon.set(' ');
 				showMenu.set(false)
-				sessionUser.set(null);
 				showModal.set(false);
 				selectedMessageIndex.set(-1);
 				messagesContainer.set([]);
 				showUser.set(false);
+				theme.set('');
+				selectedTheme.set('');
+				sessionUser.set(null);
 				await invalidate('supabase:auth');
 			} else {
 				selectedChat.set(null);
@@ -53,11 +55,13 @@
 				newName.set(' ');
 				newIcon.set(' ');
 				showMenu.set(false)
-				sessionUser.set(null);
 				showModal.set(false);
 				selectedMessageIndex.set(-1)
 				showUser.set(false);
 				messagesContainer.set([]);
+				theme.set('');
+				selectedTheme.set('');
+				sessionUser.set(null);
 				await applyAction(result);
 			}
 			loading = false;
@@ -82,6 +86,23 @@
 	</div>
 
 </main>
+
+
+{#if $selectedTheme === 'dark'}
+	<style>
+		body {
+			background-color: #000000;
+			color: #ffffff;
+		}
+	</style>
+{:else if $selectedTheme === 'light'}
+	<style>
+		body {
+			background-color: #64727C;
+			color: #000000;
+		}
+	</style>
+{/if}
 
 <style>
 	.signOut{
